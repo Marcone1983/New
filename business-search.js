@@ -27,15 +27,22 @@ class BusinessSearch {
       const dbResult = await this.searchInDatabase(query, platform);
       let results = dbResult.success ? dbResult.businesses : [];
 
-      // If no results in database, return empty results
+      // If no results in database, use Sherlock OSINT to search 400+ social networks
       if (results.length === 0) {
-        console.log('❌ No results found in database for:', query);
+        console.log('🕵️ No results in database, using Sherlock OSINT for:', query);
+        const sherlockResults = await this.searchWithSherlock(query, platform);
+        results = sherlockResults.success ? sherlockResults.results : [];
+        
+        // Store any new businesses found via Sherlock in database
+        if (results.length > 0) {
+          await this.storeSherlockResults(results);
+        }
       }
       
       const finalResult = { 
         success: true, 
         results: results.slice(0, 10), // Limit to 10 results
-        source: results.length > 0 ? 'database' : 'none'
+        source: results.length > 0 ? (results[0].source === 'sherlock_osint' ? 'sherlock' : 'database') : 'none'
       };
       
       // Cache for 30 minutes
@@ -87,6 +94,82 @@ class BusinessSearch {
     }
   }
 
+  // Search with Sherlock OSINT (400+ social networks)
+  async searchWithSherlock(query, platform = 'all') {
+    try {
+      console.log('🔍 Calling Sherlock OSINT for:', query);
+      
+      const response = await fetch('/.netlify/functions/sherlock-search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          query, 
+          platforms: platform === 'all' ? null : [platform] 
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Sherlock API error: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        console.log(`✅ Sherlock found ${result.results.length} profiles`);
+        return {
+          success: true,
+          results: result.results.map(profile => ({
+            id: profile.id,
+            name: profile.name,
+            platform: profile.platform,
+            profile_url: profile.profile_url || profile.url,
+            verified: profile.verified || false,
+            source: 'sherlock_osint',
+            confidence: profile.confidence || 0.8,
+            username: profile.username,
+            relevance_score: profile.relevance_score || 50
+          }))
+        };
+      } else {
+        console.log('❌ Sherlock search failed:', result.error);
+        return { success: false, results: [] };
+      }
+      
+    } catch (error) {
+      console.error('Sherlock OSINT error:', error);
+      return { success: false, error: error.message, results: [] };
+    }
+  }
+
+  // Store Sherlock results in database for future searches
+  async storeSherlockResults(sherlockResults) {
+    console.log('💾 Storing Sherlock results in database...');
+    
+    for (const result of sherlockResults) {
+      try {
+        const businessData = {
+          name: result.name,
+          platform: result.platform,
+          profile_url: result.profile_url,
+          verified: result.verified || false,
+          description: `Found via OSINT search - confidence: ${result.confidence}`
+        };
+
+        const { error } = await supabaseClient
+          .from('businesses')
+          .upsert([businessData], { 
+            onConflict: 'name,platform',
+            ignoreDuplicates: true 
+          });
+
+        if (!error) {
+          console.log(`✅ Stored ${result.name} on ${result.platform}`);
+        }
+      } catch (error) {
+        console.error('Error storing Sherlock result:', error);
+      }
+    }
+  }
 
   // Verify business via proxy
   async verifyBusinessViaProxy(businessName, platform) {
@@ -181,7 +264,25 @@ class BusinessSearch {
           }));
       }
       
-      // Return only database results - no generated profiles
+      // If we have fewer than limit, try Sherlock OSINT
+      if (suggestions.length < limit) {
+        const remaining = limit - suggestions.length;
+        const sherlockResult = await this.searchWithSherlock(query, 'all');
+        
+        if (sherlockResult.success) {
+          const sherlockSuggestions = sherlockResult.results
+            .slice(0, remaining)
+            .map(profile => ({
+              name: profile.name,
+              platform: profile.platform,
+              profile_url: profile.profile_url,
+              id: profile.id,
+              verified: profile.verified,
+              source: 'sherlock_osint'
+            }));
+          suggestions.push(...sherlockSuggestions);
+        }
+      }
       
       return suggestions.slice(0, limit);
     } catch (error) {
