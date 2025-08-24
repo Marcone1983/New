@@ -1,9 +1,9 @@
 [build]
   publish = "."
-  command = "pip3 install -r requirements.txt"
+  command = ""
   
 [functions]
-  python_version = "3.9"
+  directory = "netlify/functions"
   
 [build.environment]
   # Supabase
@@ -38,7 +38,7 @@
     X-XSS-Protection = "1; mode=block"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; connect-src 'self' https://ojvlmqztvjnkvtmadcok.supabase.co; img-src 'self' data:; font-src 'self'"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; connect-src 'self' https://zsionhetkwaslvounaqo.supabase.co; img-src 'self' data:; font-src 'self'"
 
 # PWA caching
 [[headers]]
