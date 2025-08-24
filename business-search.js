@@ -22,21 +22,21 @@ class BusinessSearch {
     }
 
     try {
-      // Search in database first for existing businesses
-      const dbResult = await this.dbAPI.searchBusinesses(query, platform);
+      // Search in Supabase database first for existing businesses
+      console.log('🔍 Searching in database for:', query);
+      const dbResult = await this.searchInDatabase(query, platform);
       let results = dbResult.success ? dbResult.businesses : [];
 
-      // Search via proxy (handles all social media APIs server-side)
-      const proxyResult = await this.socialProxy.searchBusiness(query, platform);
-      const socialResults = proxyResult.success ? proxyResult.results : [];
+      // If no results in database, return empty results
+      if (results.length === 0) {
+        console.log('❌ No results found in database for:', query);
+      }
       
-      // Merge and deduplicate results
-      const mergedResults = this.mergeAndDeduplicateResults(results, socialResults);
-      
-      // Store new businesses in database
-      await this.storeNewBusinesses(socialResults);
-
-      const finalResult = { success: true, results: mergedResults };
+      const finalResult = { 
+        success: true, 
+        results: results.slice(0, 10), // Limit to 10 results
+        source: results.length > 0 ? 'database' : 'none'
+      };
       
       // Cache for 30 minutes
       this.setCache(cacheKey, finalResult);
@@ -44,9 +44,49 @@ class BusinessSearch {
       return finalResult;
     } catch (error) {
       console.error('Search error:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error.message, results: [] };
     }
   }
+
+  // Search directly in Supabase database
+  async searchInDatabase(query, platform = 'all') {
+    try {
+      let queryBuilder = supabaseClient
+        .from('businesses')
+        .select('*')
+        .ilike('name', `%${query}%`);
+
+      if (platform && platform !== 'all') {
+        queryBuilder = queryBuilder.eq('platform', platform);
+      }
+
+      const { data, error } = await queryBuilder
+        .order('name')
+        .limit(10);
+      
+      if (error) throw error;
+
+      // Transform results to expected format
+      const businesses = (data || []).map(business => ({
+        id: business.id,
+        name: business.name,
+        platform: business.platform,
+        profile_url: business.profile_url,
+        verified: business.verified,
+        source: 'database',
+        confidence: 1.0,
+        description: business.description || null,
+        follower_count: business.follower_count || 0
+      }));
+
+      console.log(`✅ Found ${businesses.length} businesses in database`);
+      return { success: true, businesses };
+    } catch (error) {
+      console.error('Database search error:', error);
+      return { success: false, error: error.message, businesses: [] };
+    }
+  }
+
 
   // Verify business via proxy
   async verifyBusinessViaProxy(businessName, platform) {
@@ -117,7 +157,7 @@ class BusinessSearch {
     }
   }
 
-  // Auto-complete suggestions with real API data
+  // Auto-complete suggestions with database + generated profiles
   async getAutocompleteSuggestions(query, limit = 5) {
     if (!query || query.trim().length < 2) {
       return [];
@@ -125,26 +165,23 @@ class BusinessSearch {
 
     try {
       // Get suggestions from database first
-      const dbResult = await this.dbAPI.searchBusinesses(query);
+      const dbResult = await this.searchInDatabase(query, 'all');
       let suggestions = [];
       
-      if (dbResult.success) {
+      if (dbResult.success && dbResult.businesses.length > 0) {
         suggestions = dbResult.businesses
           .slice(0, limit)
           .map(business => ({
             name: business.name,
             platform: business.platform,
+            profile_url: business.profile_url,
             id: business.id,
-            verified: business.verified
+            verified: business.verified,
+            source: 'database'
           }));
       }
       
-      // If we have fewer than limit, try to get more from APIs
-      if (suggestions.length < limit) {
-        const remaining = limit - suggestions.length;
-        const apiSuggestions = await this.getAPISuggestions(query, remaining);
-        suggestions.push(...apiSuggestions);
-      }
+      // Return only database results - no generated profiles
       
       return suggestions.slice(0, limit);
     } catch (error) {
