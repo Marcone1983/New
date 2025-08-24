@@ -1,12 +1,12 @@
 [build]
   publish = "."
-  command = "pip install -r requirements.txt"
   
 [functions]
   directory = "netlify/functions"
 
 [functions."sherlock-search"]
   runtime = "python3.8"
+  directory = "netlify/functions/sherlock-search"
 
 [build.environment]
   # Python environment for functions

@@ -12,8 +12,7 @@ from datetime import datetime, timedelta
 import subprocess
 import tempfile
 
-# Add Python directory to path for imports
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'python'))
+# Netlify Python Function - no additional paths needed
 
 try:
     from supabase import create_client, Client
@@ -321,8 +320,8 @@ def cache_result(supabase, query, platform, api_response):
     except Exception as e:
         print(f'Cache storage error: {str(e)}')
 
-# Netlify expects this structure
-def lambda_handler(event, context):
+# Netlify Python Function entry point
+def main(event, context):
     return handler(event, context)
 
 if __name__ == '__main__':
