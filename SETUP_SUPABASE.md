@@ -77,14 +77,17 @@ CREATE POLICY "Allow public insert to users" ON users
    - **Project URL** (es: `https://xxxxx.supabase.co`)
    - **anon/public key** (inizia con `eyJhbGc...`)
 
-## 4. Configura l'App
+## 4. Configura Environment Variables
 
-Modifica il file `supabase-config.js`:
-
-```javascript
-const SUPABASE_URL = 'https://TUO_PROJECT_ID.supabase.co';
-const SUPABASE_ANON_KEY = 'tua_anon_key_qui';
+### Sviluppo Locale
+Crea file `.env` nella root:
+```bash
+VITE_SUPABASE_URL=https://ojvlmqztvjnkvtmadcok.supabase.co
+VITE_SUPABASE_ANON_KEY=tua_chiave_qui
 ```
+
+### Netlify Production
+Le variabili sono già configurate in `netlify.toml` - nessun setup aggiuntivo richiesto!
 
 ## 5. Deploy su Netlify
 

@@ -1,0 +1,22 @@
+[build]
+  publish = "."
+  
+[build.environment]
+  VITE_SUPABASE_URL = "https://ojvlmqztvjnkvtmadcok.supabase.co"
+  VITE_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qdmxtcXp0dmpua3Z0bWFkY29rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYwNTA0MDgsImV4cCI6MjA3MTYyNjQwOH0.SL2NMBOn_Y885qX6xol-OjByRaUDIywZK7d6E7aWc_M"
+
+# Security headers
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; connect-src 'self' https://ojvlmqztvjnkvtmadcok.supabase.co; img-src 'self' data:; font-src 'self'"
+
+# PWA caching
+[[headers]]
+  for = "/service-worker.js"
+  [headers.values]
+    Cache-Control = "no-cache"

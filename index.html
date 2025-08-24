@@ -612,6 +612,23 @@
             <button class="primary" onclick="handleLogin()">Accedi</button>
         </div>
     </div>
+    <!-- Environment Variables Loader -->
+    <script>
+        // Load environment variables for static hosting
+        window.ENV = window.ENV || {};
+        
+        // Try to load from Netlify environment variables
+        if (typeof process !== 'undefined' && process.env) {
+            window.ENV = { ...process.env };
+        }
+        
+        // Console log for debugging (remove in production)
+        console.log('Environment check:', {
+            hasSupabaseUrl: !!window.ENV.VITE_SUPABASE_URL,
+            hasSupabaseKey: !!window.ENV.VITE_SUPABASE_ANON_KEY
+        });
+    </script>
+    
     <!-- Supabase CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
