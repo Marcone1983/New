@@ -151,6 +151,48 @@
         .search-input-container {
             position: relative;
         }
+        
+        /* Search suggestions dropdown */
+        .search-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 50;
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+        }
+        
+        .suggestion-item {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.2s;
+        }
+        
+        .suggestion-item:hover {
+            background: #f3f4f6;
+        }
+        
+        .suggestion-name {
+            font-weight: 600;
+            color: #111827;
+        }
+        
+        .suggestion-platform {
+            font-size: 0.75rem;
+            color: #6b7280;
+            background: #f3f4f6;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+        }
         .search-input {
             width: 100%;
             padding: 0.75rem 1rem;
@@ -570,7 +612,13 @@
             <button class="primary" onclick="handleLogin()">Accedi</button>
         </div>
     </div>
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <!-- Scripts -->
+    <script src="supabase-config.js"></script>
+    <script src="database-api.js"></script>
+    <script src="business-search.js"></script>
     <script>
         // Global state
         let reviews = [];
@@ -587,21 +635,21 @@
             tiktok: { color: '#000000', label: 'TikTok', icon: '♪', url: 'https://www.tiktok.com/@' }
         };
         // Init on DOM ready
-        document.addEventListener('DOMContentLoaded', () => {
-            // Load reviews and user from localStorage
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Load user from localStorage (keep for now)
             try {
-                const savedReviews = localStorage.getItem('reviews');
-                reviews = savedReviews ? JSON.parse(savedReviews) : [];
                 const savedUser = localStorage.getItem('currentUser');
                 currentUser = savedUser ? JSON.parse(savedUser) : null;
             } catch (err) {
-                console.error('Errore caricando i dati da localStorage:', err);
-                reviews = [];
+                console.error('Errore caricando user da localStorage:', err);
                 currentUser = null;
             }
+            
             updateUserUI();
-            renderReviews();
-            updateStats();
+            await loadReviewsFromDB();
+            await updateStatsFromDB();
+            setupSearchAutocomplete();
+            
             // Register service worker for PWA
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('service-worker.js').catch((err) => console.error('SW error', err));
@@ -658,71 +706,163 @@
                 star.classList.toggle('active', index < currentRating);
             });
         }
-        // Add a new review
-        function addReview() {
+        // Add a new review with Supabase
+        async function addReview() {
             if (!currentUser) {
                 showToast('Devi effettuare l\'accesso per lasciare una recensione');
                 showLogin();
                 return;
             }
+            
             const businessName = document.getElementById('businessName').value.trim();
             const platform = document.getElementById('platform').value;
             const comment = document.getElementById('comment').value.trim();
+            
             if (!businessName || !platform || currentRating === 0) {
                 showToast('Compila tutti i campi e seleziona un rating');
                 return;
             }
-            const review = {
-                id: crypto.randomUUID(),
-                businessName,
-                platform,
-                rating: currentRating,
-                comment,
-                user: currentUser.name,
-                createdAt: new Date().toISOString()
-            };
-            reviews.push(review);
-            localStorage.setItem('reviews', JSON.stringify(reviews));
-            // Reset form
-            document.getElementById('businessName').value = '';
-            document.getElementById('platform').value = '';
-            document.getElementById('comment').value = '';
-            currentRating = 0;
-            updateStarsUI();
-            showToast('Recensione aggiunta!');
-            renderReviews();
-            updateStats();
+
+            try {
+                // Show loading
+                const submitBtn = document.querySelector('.submit-btn');
+                submitBtn.textContent = 'Salvando...';
+                submitBtn.disabled = true;
+
+                // First, ensure user exists in database
+                let userResult = await dbAPI.getUserByName(currentUser.name);
+                if (!userResult.success || !userResult.user) {
+                    userResult = await dbAPI.createUser({ name: currentUser.name });
+                    if (!userResult.success) {
+                        throw new Error('Errore creazione utente');
+                    }
+                }
+
+                // Create or get business
+                const businessResult = await dbAPI.createBusiness({
+                    name: businessName,
+                    platform: platform,
+                    profile_url: generateProfileUrl(businessName, platform)
+                });
+
+                if (!businessResult.success) {
+                    throw new Error('Errore creazione business');
+                }
+
+                // Create review
+                const reviewData = {
+                    business_id: businessResult.business.id,
+                    user_id: userResult.user.id,
+                    rating: currentRating,
+                    comment: comment,
+                    platform: platform
+                };
+
+                const reviewResult = await dbAPI.createReview(reviewData);
+                
+                if (!reviewResult.success) {
+                    throw new Error('Errore creazione recensione');
+                }
+
+                // Reset form
+                document.getElementById('businessName').value = '';
+                document.getElementById('platform').value = '';
+                document.getElementById('comment').value = '';
+                currentRating = 0;
+                updateStarsUI();
+                
+                showToast('Recensione aggiunta!');
+                await loadReviewsFromDB();
+                await updateStatsFromDB();
+
+            } catch (error) {
+                console.error('Error adding review:', error);
+                showToast('Errore nel salvare la recensione');
+            } finally {
+                // Reset button
+                const submitBtn = document.querySelector('.submit-btn');
+                submitBtn.textContent = 'Invia recensione';
+                submitBtn.disabled = false;
+            }
         }
+
+        function generateProfileUrl(businessName, platform) {
+            const cleanName = businessName.toLowerCase().replace(/[^a-z0-9]/g, '');
+            const platformUrls = {
+                instagram: `https://instagram.com/${cleanName}`,
+                facebook: `https://facebook.com/${cleanName}`,
+                linkedin: `https://www.linkedin.com/company/${cleanName}`,
+                twitter: `https://x.com/${cleanName}`,
+                tiktok: `https://www.tiktok.com/@${cleanName}`
+            };
+            return platformUrls[platform] || '#';
+        }
+        // Load reviews from Supabase
+        async function loadReviewsFromDB() {
+            try {
+                const filters = {
+                    platform: activePlatform,
+                    search: searchQuery
+                };
+                
+                const result = await dbAPI.getReviews(filters);
+                
+                if (result.success) {
+                    reviews = result.reviews.map(review => ({
+                        id: review.id,
+                        businessName: review.businesses.name,
+                        platform: review.platform,
+                        rating: review.rating,
+                        comment: review.comment,
+                        user: review.users.name,
+                        createdAt: review.created_at,
+                        profileUrl: review.businesses.profile_url
+                    }));
+                    
+                    renderReviews();
+                } else {
+                    console.error('Error loading reviews:', result.error);
+                    showToast('Errore nel caricare le recensioni');
+                }
+            } catch (error) {
+                console.error('Error loading reviews:', error);
+                // Fallback to localStorage if database fails
+                const savedReviews = localStorage.getItem('reviews');
+                reviews = savedReviews ? JSON.parse(savedReviews) : [];
+                renderReviews();
+            }
+        }
+
         // Render reviews list based on filters
         function renderReviews() {
             const container = document.getElementById('reviewsContainer');
             container.innerHTML = '';
-            const filtered = reviews.filter((r) => {
-                const matchesPlatform = activePlatform === 'all' || r.platform === activePlatform;
-                const matchesQuery = !searchQuery || r.businessName.toLowerCase().includes(searchQuery) || r.comment.toLowerCase().includes(searchQuery);
-                return matchesPlatform && matchesQuery;
-            });
-            if (filtered.length === 0) {
+            
+            if (reviews.length === 0) {
                 container.innerHTML = `<div class="empty-state"><div class="empty-icon">😕</div><p>Nessuna recensione trovata.</p></div>`;
                 return;
             }
-            filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-            filtered.forEach((r) => {
+            
+            reviews.forEach((r) => {
                 const config = platformConfig[r.platform];
                 const card = document.createElement('div');
                 card.className = 'review-card';
+                
                 // Build rating stars string
                 let ratingHTML = '';
                 for (let i = 1; i <= 5; i++) {
                     ratingHTML += `<span style="color:${i <= r.rating ? '#f59e0b' : '#d1d5db'};">★</span>`;
                 }
+                
+                const profileUrl = r.profileUrl || generateProfileUrl(r.businessName, r.platform);
+                
                 card.innerHTML = `
                     <div class="review-header">
                         <div class="review-business">
                             <div class="review-icon" style="background:${config.color}">${config.icon}</div>
                             <div>
                                 <div style="font-weight:600; color:#111827">${r.businessName}</div>
-                                <a href="${config.url}${encodeURIComponent(r.businessName)}" target="_blank" style="font-size:0.75rem; color:${config.color}; text-decoration:none;">Apri su ${config.label}</a>
+                                <a href="${profileUrl}" target="_blank" style="font-size:0.75rem; color:${config.color}; text-decoration:none;">Apri su ${config.label}</a>
                             </div>
                         </div>
                         <div class="review-rating">${ratingHTML}</div>
@@ -734,29 +874,124 @@
             });
         }
         // Filter by social platform
-        function filterSocial(platform, btn) {
+        async function filterSocial(platform, btn) {
             activePlatform = platform;
             // Update tab states
             const tabs = document.querySelectorAll('.social-tabs .tab');
             tabs.forEach((tab) => tab.classList.remove('active'));
             if (btn) btn.classList.add('active');
-            searchQuery = document.getElementById('search').value.trim().toLowerCase();
-            renderReviews();
+            
+            await loadReviewsFromDB();
         }
-        // Search reviews
-        function search() {
+        
+        // Search reviews with debouncing
+        let searchTimeout;
+        async function search() {
             searchQuery = document.getElementById('search').value.trim().toLowerCase();
-            renderReviews();
+            
+            // Clear previous timeout
+            if (searchTimeout) {
+                clearTimeout(searchTimeout);
+            }
+            
+            // Debounce search by 500ms
+            searchTimeout = setTimeout(async () => {
+                await loadReviewsFromDB();
+                
+                // Also show business suggestions
+                if (searchQuery.length >= 2) {
+                    await showBusinessSuggestions(searchQuery);
+                } else {
+                    hideBusinessSuggestions();
+                }
+            }, 500);
         }
-        // Update statistics
-        function updateStats() {
+        
+        // Setup search autocomplete
+        function setupSearchAutocomplete() {
+            const searchInput = document.getElementById('search');
+            
+            searchInput.addEventListener('input', search);
+            searchInput.addEventListener('focus', () => {
+                if (searchQuery.length >= 2) {
+                    showBusinessSuggestions(searchQuery);
+                }
+            });
+        }
+        
+        // Show business suggestions
+        async function showBusinessSuggestions(query) {
+            const suggestions = await businessSearch.getAutocompleteSuggestions(query);
+            
+            if (suggestions.length > 0) {
+                const suggestionsHTML = suggestions.map(business => 
+                    `<div class="suggestion-item" onclick="selectBusiness('${business.name}', '${business.platform}')">
+                        <span class="suggestion-name">${business.name}</span>
+                        <span class="suggestion-platform">${platformConfig[business.platform].label}</span>
+                    </div>`
+                ).join('');
+                
+                // Create or update suggestions dropdown
+                let dropdown = document.getElementById('searchSuggestions');
+                if (!dropdown) {
+                    dropdown = document.createElement('div');
+                    dropdown.id = 'searchSuggestions';
+                    dropdown.className = 'search-suggestions';
+                    document.querySelector('.search-input-container').appendChild(dropdown);
+                }
+                
+                dropdown.innerHTML = suggestionsHTML;
+                dropdown.style.display = 'block';
+            }
+        }
+        
+        // Hide business suggestions
+        function hideBusinessSuggestions() {
+            const dropdown = document.getElementById('searchSuggestions');
+            if (dropdown) {
+                dropdown.style.display = 'none';
+            }
+        }
+        
+        // Select business from suggestions
+        function selectBusiness(businessName, platform) {
+            document.getElementById('search').value = businessName;
+            searchQuery = businessName.toLowerCase();
+            hideBusinessSuggestions();
+            
+            // Filter to show only this business reviews
+            loadReviewsFromDB();
+        }
+        // Update statistics from Supabase
+        async function updateStatsFromDB() {
+            try {
+                const result = await dbAPI.getGlobalStats();
+                
+                if (result.success) {
+                    const stats = result.stats;
+                    document.getElementById('totalReviews').textContent = stats.totalReviews;
+                    document.getElementById('totalBusinesses').textContent = stats.totalBusinesses;
+                    document.getElementById('avgRating').textContent = stats.avgRating;
+                    document.getElementById('activePlatforms').textContent = stats.activePlatforms;
+                } else {
+                    console.error('Error loading stats:', result.error);
+                    // Fallback to local stats
+                    updateStatsLocal();
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
+                updateStatsLocal();
+            }
+        }
+        
+        // Fallback local stats calculation
+        function updateStatsLocal() {
             const total = reviews.length;
             const businesses = new Set(reviews.map((r) => r.businessName)).size;
             const avg = total ? (reviews.reduce((sum, r) => sum + r.rating, 0) / total).toFixed(1) : '0.0';
             document.getElementById('totalReviews').textContent = total;
             document.getElementById('totalBusinesses').textContent = businesses;
             document.getElementById('avgRating').textContent = avg;
-            // Number of active platforms is static from config length
             document.getElementById('activePlatforms').textContent = Object.keys(platformConfig).length;
         }
         // Toast notification
