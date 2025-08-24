@@ -20,6 +20,33 @@ exports.handler = async (event, context) => {
       };
     }
 
+    // STEP 1.5: Try Sherlock OSINT as primary search method
+    console.log('🕵️ Attempting Sherlock OSINT search for:', query);
+    try {
+      const sherlockResponse = await fetch(`${process.env.URL}/.netlify/functions/sherlock-search`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query, platforms: platform === 'all' ? null : [platform] })
+      });
+      
+      if (sherlockResponse.ok) {
+        const sherlockData = await sherlockResponse.json();
+        if (sherlockData.success && sherlockData.results.length > 0) {
+          console.log('✅ Sherlock found profiles, returning OSINT results');
+          return {
+            statusCode: 200,
+            headers: getCorsHeaders(),
+            body: JSON.stringify({
+              ...sherlockData,
+              message: 'OSINT results from Sherlock'
+            })
+          };
+        }
+      }
+    } catch (error) {
+      console.log('⚠️ Sherlock search failed, falling back to APIs:', error.message);
+    }
+
     // Your API keys stored as Netlify environment variables
     const apiKeys = {
       meta: process.env.META_ACCESS_TOKEN,
@@ -88,12 +115,7 @@ exports.handler = async (event, context) => {
 
     return {
       statusCode: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST',
-        'Access-Control-Allow-Headers': 'Content-Type'
-      },
+      headers: getCorsHeaders(),
       body: JSON.stringify({
         success: true,
         query: query,
@@ -108,10 +130,7 @@ exports.handler = async (event, context) => {
     
     return {
       statusCode: 500,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
-      },
+      headers: getCorsHeaders(),
       body: JSON.stringify({
         success: false,
         error: 'Internal server error'
@@ -119,6 +138,15 @@ exports.handler = async (event, context) => {
     };
   }
 };
+
+function getCorsHeaders() {
+  return {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type'
+  };
+}
 
 // Search Instagram Business accounts
 async function searchInstagram(query, accessToken) {

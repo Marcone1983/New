@@ -939,13 +939,23 @@
         
         // Show business suggestions
         async function showBusinessSuggestions(query) {
-            const suggestions = await businessSearch.getAutocompleteSuggestions(query);
-            
-            if (suggestions.length > 0) {
+            try {
+                // Call our Netlify Function with Sherlock integration
+                const response = await fetch('/.netlify/functions/search-business', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query, platform: activePlatform })
+                });
+                
+                const result = await response.json();
+                const suggestions = result.success ? result.results.slice(0, 5) : [];
+                
+                if (suggestions.length > 0) {
                 const suggestionsHTML = suggestions.map(business => 
-                    `<div class="suggestion-item" onclick="selectBusiness('${business.name}', '${business.platform}')">
+                    `<div class="suggestion-item" onclick="selectBusiness('${business.name}', '${business.platform}', '${business.profile_url}')">
                         <span class="suggestion-name">${business.name}</span>
-                        <span class="suggestion-platform">${platformConfig[business.platform].label}</span>
+                        <span class="suggestion-platform">${platformConfig[business.platform]?.label || business.platform}</span>
+                        ${business.verified ? '<span class="verified-badge">✓</span>' : ''}
                     </div>`
                 ).join('');
                 
@@ -961,6 +971,10 @@
                 dropdown.innerHTML = suggestionsHTML;
                 dropdown.style.display = 'block';
             }
+            } catch (error) {
+                console.error('Error fetching business suggestions:', error);
+                hideBusinessSuggestions();
+            }
         }
         
         // Hide business suggestions
@@ -972,10 +986,24 @@
         }
         
         // Select business from suggestions
-        function selectBusiness(businessName, platform) {
+        function selectBusiness(businessName, platform, profileUrl = null) {
             document.getElementById('search').value = businessName;
             searchQuery = businessName.toLowerCase();
             hideBusinessSuggestions();
+            
+            // Store the selected profile URL for later use
+            if (profileUrl) {
+                window.selectedProfileUrl = profileUrl;
+            }
+            
+            // Switch to the platform tab if provided
+            if (platform && platformConfig[platform]) {
+                const platformTab = document.querySelector(`[onclick*="${platform}"]`);
+                if (platformTab) {
+                    filterSocial(platform, platformTab);
+                    return;
+                }
+            }
             
             // Filter to show only this business reviews
             loadReviewsFromDB();
