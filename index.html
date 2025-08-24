@@ -573,17 +573,9 @@
                     <span style="color:#4f46e5">➕</span>
                     Aggiungi recensione
                 </h2>
-                <div class="form-grid">
-                    <input type="text" id="businessName" placeholder="Nome azienda" class="form-input">
-                    <select id="platform" class="form-select">
-                        <option value="">Seleziona piattaforma</option>
-                        <option value="instagram">📷 Instagram</option>
-                        <option value="facebook">f Facebook</option>
-                        <option value="linkedin">in LinkedIn</option>
-                        <option value="twitter">𝕏 X</option>
-                        <option value="tiktok">♪ TikTok</option>
-                    </select>
-                </div>
+                <!-- CAMPI NASCOSTI PER NOME E PIATTAFORMA -->
+                <input type="hidden" id="businessName">
+                <input type="hidden" id="platform">
                 <div>
                     <label style="display:block; margin-bottom:0.5rem; font-weight:600; color:#374151">Rating</label>
                     <div class="rating-stars" id="stars">
@@ -756,11 +748,13 @@
                     }
                 }
 
-                // Create or get business
+                // Create or get business (use stored profile URL if available)
+                const profileUrl = window.selectedProfileUrl || generateProfileUrl(businessName, platform);
                 const businessResult = await dbAPI.createBusiness({
                     name: businessName,
                     platform: platform,
-                    profile_url: generateProfileUrl(businessName, platform)
+                    profile_url: profileUrl,
+                    verified: window.selectedProfileUrl ? true : false // Se viene da ricerca è più affidabile
                 });
 
                 if (!businessResult.success) {
@@ -788,6 +782,7 @@
                 document.getElementById('comment').value = '';
                 currentRating = 0;
                 updateStarsUI();
+                window.selectedProfileUrl = null; // Reset stored URL
                 
                 showToast('Recensione aggiunta!');
                 await loadReviewsFromDB();
@@ -940,14 +935,8 @@
         // Show business suggestions
         async function showBusinessSuggestions(query) {
             try {
-                // Call our Netlify Function with Sherlock integration
-                const response = await fetch('/.netlify/functions/search-business', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ query, platform: activePlatform })
-                });
-                
-                const result = await response.json();
+                // Use businessSearch directly (Database + Sherlock OSINT)
+                const result = await businessSearch.searchBusinessProfiles(query, activePlatform);
                 const suggestions = result.success ? result.results.slice(0, 5) : [];
                 
                 if (suggestions.length > 0) {
@@ -995,6 +984,10 @@
             if (profileUrl) {
                 window.selectedProfileUrl = profileUrl;
             }
+            
+            // 🔴 PRE-COMPILA I CAMPI NASCOSTI DEL FORM
+            document.getElementById('businessName').value = businessName;
+            document.getElementById('platform').value = platform || '';
             
             // Switch to the platform tab if provided
             if (platform && platformConfig[platform]) {
