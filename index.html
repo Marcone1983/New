@@ -81,6 +81,11 @@
             font-weight: 800;
             letter-spacing: -0.5px;
         }
+        .app-subtitle {
+            font-size: 0.8rem;
+            opacity: 0.9;
+            margin-top: 0.2rem;
+        }
         #userSection button, #userSection span {
             font-size: 0.9rem;
         }
@@ -509,6 +514,73 @@
         .hidden {
             display: none;
         }
+        /* Selected business indicator */
+        .selected-business {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .selected-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .selected-platform {
+            background: rgba(255,255,255,0.2);
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.8rem;
+        }
+        .clear-selection {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .clear-selection:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        /* Footer */
+        .footer {
+            background: #1f2937;
+            color: #d1d5db;
+            padding: 2rem 1rem 1rem;
+            margin-top: 3rem;
+        }
+        .footer-content {
+            max-width: 768px;
+            margin: 0 auto;
+        }
+        .footer-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .footer-links a {
+            color: #9ca3af;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        .footer-links a:hover {
+            color: #f3f4f6;
+        }
+        .footer-bottom {
+            text-align: center;
+            font-size: 0.8rem;
+            color: #6b7280;
+            border-top: 1px solid #374151;
+            padding-top: 1rem;
+        }
     </style>
 </head>
 <body>
@@ -520,7 +592,10 @@
                     <div class="logo-img">
                         <img src="icons/icon-192.png" alt="Logo SocialTrust">
                     </div>
-                    <h1 class="app-title">SocialTrust</h1>
+                    <div>
+                        <h1 class="app-title">SocialTrust</h1>
+                        <div class="app-subtitle">Piattaforma di rating professionale</div>
+                    </div>
                 </div>
                 <!-- User section: login/logout -->
                 <div id="userSection">
@@ -573,6 +648,16 @@
                     <span style="color:#4f46e5">➕</span>
                     Aggiungi recensione
                 </h2>
+                
+                <!-- Indicatore business selezionato -->
+                <div id="selectedBusiness" class="selected-business hidden">
+                    <div class="selected-info">
+                        <span id="selectedBusinessName">Nessun business selezionato</span>
+                        <span id="selectedPlatform" class="selected-platform"></span>
+                    </div>
+                    <button onclick="clearSelection()" class="clear-selection">✕</button>
+                </div>
+                
                 <!-- CAMPI NASCOSTI PER NOME E PIATTAFORMA -->
                 <input type="hidden" id="businessName">
                 <input type="hidden" id="platform">
@@ -592,6 +677,21 @@
             <!-- Reviews list -->
             <div id="reviewsContainer"></div>
         </main>
+        
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-links">
+                    <a href="privacy.html">Privacy Policy</a>
+                    <a href="terms.html">Terms of Service</a>
+                    <a href="mailto:help@socialtrust.com">Contatti</a>
+                    <a href="mailto:abuse@socialtrust.com">Segnalazioni</a>
+                </div>
+                <div class="footer-bottom">
+                    <p>&copy; 2025 SocialTrust. Piattaforma professionale per la valutazione di aziende sui social media.</p>
+                </div>
+            </div>
+        </footer>
     </div>
     <!-- Login Modal -->
     <div id="overlay" class="overlay hidden" onclick="closeLogin()"></div>
@@ -989,6 +1089,9 @@
             document.getElementById('businessName').value = businessName;
             document.getElementById('platform').value = platform || '';
             
+            // Mostra l'indicatore del business selezionato
+            updateSelectedBusinessIndicator(businessName, platform);
+            
             // Switch to the platform tab if provided
             if (platform && platformConfig[platform]) {
                 const platformTab = document.querySelector(`[onclick*="${platform}"]`);
@@ -1047,6 +1150,31 @@
         // Basic sanitization to avoid injection in comments/user names
         function sanitize(str) {
             return String(str).replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+        
+        // Update selected business indicator
+        function updateSelectedBusinessIndicator(businessName, platform) {
+            const indicator = document.getElementById('selectedBusiness');
+            const nameEl = document.getElementById('selectedBusinessName');
+            const platformEl = document.getElementById('selectedPlatform');
+            
+            if (businessName && platform) {
+                nameEl.textContent = businessName;
+                platformEl.textContent = platformConfig[platform]?.label || platform;
+                indicator.classList.remove('hidden');
+            } else {
+                indicator.classList.add('hidden');
+            }
+        }
+        
+        // Clear business selection
+        function clearSelection() {
+            document.getElementById('businessName').value = '';
+            document.getElementById('platform').value = '';
+            window.selectedProfileUrl = null;
+            updateSelectedBusinessIndicator('', '');
+            document.getElementById('search').value = '';
+            searchQuery = '';
         }
     </script>
 </body>
