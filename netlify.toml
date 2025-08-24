@@ -2,8 +2,29 @@
   publish = "."
   
 [build.environment]
+  # Supabase
   VITE_SUPABASE_URL = "https://ojvlmqztvjnkvtmadcok.supabase.co"
   VITE_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qdmxtcXp0dmpua3Z0bWFkY29rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYwNTA0MDgsImV4cCI6MjA3MTYyNjQwOH0.SL2NMBOn_Y885qX6xol-OjByRaUDIywZK7d6E7aWc_M"
+  
+  # Meta (Facebook/Instagram) API - Configure in Netlify dashboard
+  VITE_META_APP_ID = ""
+  VITE_META_APP_SECRET = ""
+  VITE_META_ACCESS_TOKEN = ""
+  
+  # LinkedIn API - Configure in Netlify dashboard
+  VITE_LINKEDIN_CLIENT_ID = ""
+  VITE_LINKEDIN_CLIENT_SECRET = ""
+  VITE_LINKEDIN_ACCESS_TOKEN = ""
+  
+  # Twitter/X API - Configure in Netlify dashboard
+  VITE_TWITTER_BEARER_TOKEN = ""
+  VITE_TWITTER_API_KEY = ""
+  VITE_TWITTER_API_SECRET = ""
+  
+  # TikTok Business API - Configure in Netlify dashboard
+  VITE_TIKTOK_CLIENT_KEY = ""
+  VITE_TIKTOK_CLIENT_SECRET = ""
+  VITE_TIKTOK_ACCESS_TOKEN = ""
 
 # Security headers
 [[headers]]
