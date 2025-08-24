@@ -1,200 +1,155 @@
-// Database API functions for SocialTrust
-class DatabaseAPI {
-  constructor() {
-    this.supabase = supabaseClient;
-  }
+// Database API wrapper using Netlify Functions for SocialTrust reviews
+// Handles all database operations through serverless backend
 
-  // User management
-  async createUser(userData) {
-    try {
-      const { data, error } = await this.supabase
-        .from('users')
-        .insert([userData])
-        .select()
-        .single();
-      
-      if (error) throw error;
-      return { success: true, user: data };
-    } catch (error) {
-      console.error('Error creating user:', error);
-      return { success: false, error: error.message };
-    }
-  }
-
-  async getUserByName(name) {
-    try {
-      const { data, error } = await this.supabase
-        .from('users')
-        .select('*')
-        .eq('name', name)
-        .single();
-      
-      if (error && error.code !== 'PGRST116') throw error;
-      return { success: true, user: data };
-    } catch (error) {
-      console.error('Error getting user:', error);
-      return { success: false, error: error.message };
-    }
-  }
-
-  // Business management
-  async createBusiness(businessData) {
-    try {
-      const { data, error } = await this.supabase
-        .from('businesses')
-        .upsert([businessData], { 
-          onConflict: 'name,platform',
-          ignoreDuplicates: false 
-        })
-        .select()
-        .single();
-      
-      if (error) throw error;
-      return { success: true, business: data };
-    } catch (error) {
-      console.error('Error creating business:', error);
-      return { success: false, error: error.message };
-    }
-  }
-
-  async searchBusinesses(query, platform = null) {
-    try {
-      let queryBuilder = this.supabase
-        .from('businesses')
-        .select('*')
-        .ilike('name', `%${query}%`);
-
-      if (platform && platform !== 'all') {
-        queryBuilder = queryBuilder.eq('platform', platform);
-      }
-
-      const { data, error } = await queryBuilder
-        .order('name')
-        .limit(50);
-      
-      if (error) throw error;
-      return { success: true, businesses: data };
-    } catch (error) {
-      console.error('Error searching businesses:', error);
-      return { success: false, error: error.message };
-    }
-  }
-
-  // Review management
-  async createReview(reviewData) {
-    try {
-      const { data, error } = await this.supabase
-        .from('reviews')
-        .insert([reviewData])
-        .select(`
-          *,
-          businesses!inner(name, platform, profile_url),
-          users!inner(name)
-        `)
-        .single();
-      
-      if (error) throw error;
-      return { success: true, review: data };
-    } catch (error) {
-      console.error('Error creating review:', error);
-      return { success: false, error: error.message };
-    }
-  }
-
-  async getReviews(filters = {}) {
-    try {
-      let queryBuilder = this.supabase
-        .from('reviews')
-        .select(`
-          *,
-          businesses!inner(name, platform, profile_url),
-          users!inner(name)
-        `);
-
-      if (filters.platform && filters.platform !== 'all') {
-        queryBuilder = queryBuilder.eq('platform', filters.platform);
-      }
-
-      if (filters.businessId) {
-        queryBuilder = queryBuilder.eq('business_id', filters.businessId);
-      }
-
-      if (filters.search) {
-        queryBuilder = queryBuilder.or(
-          `businesses.name.ilike.%${filters.search}%,comment.ilike.%${filters.search}%`
-        );
-      }
-
-      const { data, error } = await queryBuilder
-        .order('created_at', { ascending: false })
-        .limit(100);
-      
-      if (error) throw error;
-      return { success: true, reviews: data };
-    } catch (error) {
-      console.error('Error getting reviews:', error);
-      return { success: false, error: error.message };
-    }
-  }
-
-  async getBusinessStats(businessId) {
-    try {
-      const { data, error } = await this.supabase
-        .from('reviews')
-        .select('rating')
-        .eq('business_id', businessId);
-      
-      if (error) throw error;
-      
-      const totalReviews = data.length;
-      const avgRating = totalReviews > 0 
-        ? data.reduce((sum, review) => sum + review.rating, 0) / totalReviews 
-        : 0;
-
-      return { 
-        success: true, 
-        stats: { 
-          totalReviews, 
-          avgRating: Math.round(avgRating * 10) / 10 
-        } 
-      };
-    } catch (error) {
-      console.error('Error getting business stats:', error);
-      return { success: false, error: error.message };
-    }
-  }
-
-  async getGlobalStats() {
-    try {
-      const [reviewsResult, businessesResult] = await Promise.all([
-        this.supabase.from('reviews').select('rating'),
-        this.supabase.from('businesses').select('id')
-      ]);
-
-      if (reviewsResult.error) throw reviewsResult.error;
-      if (businessesResult.error) throw businessesResult.error;
-
-      const totalReviews = reviewsResult.data.length;
-      const totalBusinesses = businessesResult.data.length;
-      const avgRating = totalReviews > 0 
-        ? reviewsResult.data.reduce((sum, review) => sum + review.rating, 0) / totalReviews 
-        : 0;
-
-      return {
-        success: true,
-        stats: {
-          totalReviews,
-          totalBusinesses,
-          avgRating: Math.round(avgRating * 10) / 10,
-          activePlatforms: 5
+const dbAPI = {
+    
+    // Save a review using Netlify Functions
+    async saveReview(reviewData) {
+        try {
+            const response = await fetch('/.netlify/functions/api-reviews', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    businessName: reviewData.businessName,
+                    platform: reviewData.platform,
+                    profileUrl: reviewData.profileUrl,
+                    rating: reviewData.rating,
+                    comment: reviewData.comment,
+                    userName: reviewData.user,
+                    userEmail: reviewData.userEmail
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                console.log('✅ Review saved via API:', result.review.id);
+                return {
+                    success: true,
+                    review: result.review
+                };
+            } else {
+                throw new Error(result.error || 'Failed to save review');
+            }
+            
+        } catch (error) {
+            console.error('❌ Error saving review:', error);
+            return {
+                success: false,
+                error: error.message
+            };
         }
-      };
-    } catch (error) {
-      console.error('Error getting global stats:', error);
-      return { success: false, error: error.message };
+    },
+    
+    // Get reviews with filters using Netlify Functions
+    async getReviews(filters = {}) {
+        try {
+            const params = new URLSearchParams();
+            
+            if (filters.platform && filters.platform !== 'all') {
+                params.append('platform', filters.platform);
+            }
+            
+            if (filters.search) {
+                params.append('search', filters.search);
+            }
+            
+            params.append('limit', '50');
+            params.append('offset', '0');
+            
+            const response = await fetch(`/.netlify/functions/api-reviews?${params.toString()}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                console.log(`✅ Fetched ${result.reviews.length} reviews via API`);
+                return {
+                    success: true,
+                    reviews: result.reviews
+                };
+            } else {
+                throw new Error(result.error || 'Failed to fetch reviews');
+            }
+            
+        } catch (error) {
+            console.error('❌ Error fetching reviews:', error);
+            return {
+                success: false,
+                error: error.message,
+                reviews: []
+            };
+        }
+    },
+    
+    // Get global statistics using Netlify Functions
+    async getGlobalStats() {
+        try {
+            const response = await fetch('/.netlify/functions/api-stats', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                console.log('✅ Global stats fetched via API:', result.stats);
+                return {
+                    success: true,
+                    stats: result.stats
+                };
+            } else {
+                throw new Error(result.error || 'Failed to fetch stats');
+            }
+            
+        } catch (error) {
+            console.error('❌ Error fetching stats:', error);
+            return {
+                success: false,
+                error: error.message,
+                stats: {
+                    totalReviews: 0,
+                    totalBusinesses: 0,
+                    avgRating: 0,
+                    activePlatforms: 0
+                }
+            };
+        }
+    },
+    
+    // Initialize database schema
+    async setupDatabase() {
+        try {
+            const response = await fetch('/.netlify/functions/setup-database', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                console.log('✅ Database setup completed');
+                return { success: true };
+            } else {
+                throw new Error(result.error || 'Failed to setup database');
+            }
+            
+        } catch (error) {
+            console.error('❌ Error setting up database:', error);
+            return {
+                success: false,
+                error: error.message
+            };
+        }
     }
-  }
-}
-
-// Initialize database API
-const dbAPI = new DatabaseAPI();
+};

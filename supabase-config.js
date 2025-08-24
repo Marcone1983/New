@@ -2,12 +2,12 @@
 const SUPABASE_URL = import.meta?.env?.VITE_SUPABASE_URL || 
                      process.env?.VITE_SUPABASE_URL || 
                      window?.ENV?.VITE_SUPABASE_URL ||
-                     'https://ojvlmqztvjnkvtmadcok.supabase.co'; // Fallback for static hosting
+                     'https://zsionhetkwaslvounaqo.supabase.co'; // Fallback for static hosting
 
 const SUPABASE_ANON_KEY = import.meta?.env?.VITE_SUPABASE_ANON_KEY || 
                           process.env?.VITE_SUPABASE_ANON_KEY || 
                           window?.ENV?.VITE_SUPABASE_ANON_KEY ||
-                          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qdmxtcXp0dmpua3Z0bWFkY29rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYwNTA0MDgsImV4cCI6MjA3MTYyNjQwOH0.SL2NMBOn_Y885qX6xol-OjByRaUDIywZK7d6E7aWc_M'; // Fallback
+                          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpzaW9uaGV0a3dhc2x2b3VuYXFvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYwNTgwNTUsImV4cCI6MjA3MTYzNDA1NX0.5DVKWx1-r3lkuUo7UVVnorTSq_HTZz3Gr6J6jbDJ5ig'; // Fallback
 
 // Initialize Supabase client
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
