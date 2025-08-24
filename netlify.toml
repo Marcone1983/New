@@ -6,37 +6,11 @@
 
 [functions."sherlock-search"]
   runtime = "python3.8"
-  directory = "netlify/functions/sherlock-search"
 
 [build.environment]
-  # Python environment for functions
-  PYTHONDONTWRITEBYTECODE = "1"
-  PYTHONUNBUFFERED = "1"
-  PIP_CACHE_DIR = "/opt/buildhome/.cache/pip"
-  
   # Supabase
   VITE_SUPABASE_URL = "https://zsionhetkwaslvounaqo.supabase.co"
   VITE_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpzaW9uaGV0a3dhc2x2b3VuYXFvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYwNTgwNTUsImV4cCI6MjA3MTYzNDA1NX0.5DVKWx1-r3lkuUo7UVVnorTSq_HTZz3Gr6J6jbDJ5ig"
-  
-  # Meta (Facebook/Instagram) API - Configure in Netlify dashboard
-  VITE_META_APP_ID = ""
-  VITE_META_APP_SECRET = ""
-  VITE_META_ACCESS_TOKEN = ""
-  
-  # LinkedIn API - Configure in Netlify dashboard
-  VITE_LINKEDIN_CLIENT_ID = ""
-  VITE_LINKEDIN_CLIENT_SECRET = ""
-  VITE_LINKEDIN_ACCESS_TOKEN = ""
-  
-  # Twitter/X API - Configure in Netlify dashboard
-  VITE_TWITTER_BEARER_TOKEN = ""
-  VITE_TWITTER_API_KEY = ""
-  VITE_TWITTER_API_SECRET = ""
-  
-  # TikTok Business API - Configure in Netlify dashboard
-  VITE_TIKTOK_CLIENT_KEY = ""
-  VITE_TIKTOK_CLIENT_SECRET = ""
-  VITE_TIKTOK_ACCESS_TOKEN = ""
 
 # Security headers
 [[headers]]
