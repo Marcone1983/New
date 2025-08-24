@@ -1,10 +1,19 @@
 [build]
   publish = "."
+  command = "pip install -r requirements.txt"
   
 [functions]
   directory = "netlify/functions"
 
-[build.environment]  
+[functions."sherlock-search"]
+  runtime = "python3.9"
+
+[build.environment]
+  # Python environment for functions
+  PYTHONDONTWRITEBYTECODE = "1"
+  PYTHONUNBUFFERED = "1"
+  PIP_CACHE_DIR = "/opt/buildhome/.cache/pip"
+  
   # Supabase
   VITE_SUPABASE_URL = "https://zsionhetkwaslvounaqo.supabase.co"
   VITE_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpzaW9uaGV0a3dhc2x2b3VuYXFvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYwNTgwNTUsImV4cCI6MjA3MTYzNDA1NX0.5DVKWx1-r3lkuUo7UVVnorTSq_HTZz3Gr6J6jbDJ5ig"
