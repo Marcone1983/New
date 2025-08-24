@@ -137,15 +137,7 @@ CREATE TRIGGER update_reviews_updated_at
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 
--- Insert some sample businesses for testing
-INSERT INTO businesses (name, platform, profile_url, verified, follower_count, description, category) 
-VALUES 
-  ('GrowVerse', 'instagram', 'https://instagram.com/growverse', true, 15000, 'Digital marketing agency specializing in growth strategies', 'marketing'),
-  ('GrowVerse', 'linkedin', 'https://www.linkedin.com/company/growverse', true, 8500, 'Professional digital marketing services', 'marketing'),
-  ('TechFlow Solutions', 'linkedin', 'https://www.linkedin.com/company/techflow-solutions', true, 12000, 'Enterprise software solutions', 'technology'),
-  ('Pizza Corner', 'facebook', 'https://facebook.com/pizzacorner', false, 2500, 'Authentic Italian pizza restaurant', 'restaurant'),
-  ('FitLife Gym', 'instagram', 'https://instagram.com/fitlifegym', true, 8900, '24/7 fitness center with personal trainers', 'fitness')
-ON CONFLICT (name, platform) DO NOTHING;
+-- Enterprise production database - no sample data
 
 -- Verify the setup
 SELECT 'users' as table_name, COUNT(*) as row_count FROM users

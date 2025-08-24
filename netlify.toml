@@ -7,7 +7,7 @@
 
 [build.environment]
   # Python runtime for OSINT functions
-  PYTHON_VERSION = "3.9"
+  PYTHON_VERSION = "3.11"
   
   # Supabase
   VITE_SUPABASE_URL = "https://zsionhetkwaslvounaqo.supabase.co"
