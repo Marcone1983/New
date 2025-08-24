@@ -8,7 +8,16 @@
   runtime = "python3.8"
 
 [build.environment]
-  # Supabase
+  # Build-time variables
+  NODE_VERSION = "18"
+
+[context.production.environment]
+  # Supabase credentials for production
+  VITE_SUPABASE_URL = "https://zsionhetkwaslvounaqo.supabase.co"
+  VITE_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpzaW9uaGV0a3dhc2x2b3VuYXFvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYwNTgwNTUsImV4cCI6MjA3MTYzNDA1NX0.5DVKWx1-r3lkuUo7UVVnorTSq_HTZz3Gr6J6jbDJ5ig"
+
+[context.deploy-preview.environment]
+  # Supabase credentials for preview deploys
   VITE_SUPABASE_URL = "https://zsionhetkwaslvounaqo.supabase.co"
   VITE_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpzaW9uaGV0a3dhc2x2b3VuYXFvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYwNTgwNTUsImV4cCI6MjA3MTYzNDA1NX0.5DVKWx1-r3lkuUo7UVVnorTSq_HTZz3Gr6J6jbDJ5ig"
 
