@@ -1,31 +1,31 @@
 {
-  "name": "socialtrust",
+  "name": "socialtrust-platform",
   "version": "1.0.0",
-  "description": "Professional business rating platform for social media",
+  "description": "Enterprise social media business rating platform with real payment processing",
   "main": "index.html",
-  "dependencies": {
-    "@supabase/supabase-js": "^2.39.3"
-  },
-  "devDependencies": {},
   "scripts": {
-    "dev": "npx serve .",
-    "build": "echo 'Static site - no build needed'",
-    "start": "npx serve ."
+    "dev": "netlify dev",
+    "build": "echo 'No build process needed - static PWA'",
+    "deploy": "netlify deploy --prod"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.4",
+    "stripe": "^14.21.0"
+  },
+  "devDependencies": {
+    "netlify-cli": "^17.0.0"
   },
   "keywords": [
-    "business-reviews",
     "social-media",
-    "rating-platform", 
+    "business-rating",
     "enterprise",
+    "stripe-payments",
     "pwa"
   ],
-  "author": "SocialTrust Platform",
+  "author": "SocialTrust Team",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/Marcone1983/New.git"
-  },
-  "engines": {
-    "node": ">=18.0.0"
   }
 }

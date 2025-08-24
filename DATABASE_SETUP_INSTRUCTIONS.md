@@ -5,9 +5,23 @@
 1. Vai su **Netlify Dashboard** → Il tuo sito → **Site Settings** → **Environment Variables**
 2. Aggiungi queste variabili:
 
-```
+```bash
+# Supabase Configuration
 VITE_SUPABASE_URL = https://zsionhetkwaslvounaqo.supabase.co
 VITE_SUPABASE_ANON_KEY = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpzaW9uaGV0a3dhc2x2b3VuYXFvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYwNTgwNTUsImV4cCI6MjA3MTYzNDA1NX0.5DVKWx1-r3lkuUo7UVVnorTSq_HTZz3Gr6J6jbDJ5ig
+
+# Stripe Configuration (REAL PAYMENT SYSTEM)
+STRIPE_PUBLISHABLE_KEY = [La tua chiave publishable Stripe]
+STRIPE_SECRET_KEY = [La tua chiave secret Stripe]  
+STRIPE_WEBHOOK_SECRET = [Da configurare dopo setup webhook]
+
+# Price IDs Stripe (Da configurare dopo creazione prodotti)
+STRIPE_PLUS_MONTHLY_PRICE_ID = [price_xxxxx]
+STRIPE_PLUS_YEARLY_PRICE_ID = [price_xxxxx]
+STRIPE_PREMIUM_MONTHLY_PRICE_ID = [price_xxxxx]
+STRIPE_PREMIUM_YEARLY_PRICE_ID = [price_xxxxx]
+STRIPE_ADVANCED_MONTHLY_PRICE_ID = [price_xxxxx]
+STRIPE_ADVANCED_YEARLY_PRICE_ID = [price_xxxxx]
 ```
 
 ## Step 2: Setup Billing Database in Supabase

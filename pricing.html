@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SocialTrust - Piani e Prezzi Enterprise</title>
+    <meta name="description" content="Scegli il piano perfetto per la tua azienda">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 4rem;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .pricing-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            position: relative;
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .pricing-card.popular {
+            border: 3px solid #4f46e5;
+            transform: scale(1.05);
+        }
+
+        .popular-badge {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #4f46e5;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .plan-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .plan-tagline {
+            color: #666;
+            margin-bottom: 1.5rem;
+        }
+
+        .plan-price {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #4f46e5;
+            margin-bottom: 0.5rem;
+        }
+
+        .plan-price .currency {
+            font-size: 1.5rem;
+            vertical-align: top;
+        }
+
+        .plan-interval {
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        .billing-toggle {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .toggle-switch {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 25px;
+            padding: 0.5rem;
+            display: inline-flex;
+            gap: 0.5rem;
+        }
+
+        .toggle-option {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-option.active {
+            background: #4f46e5;
+            color: white;
+        }
+
+        .features-list {
+            list-style: none;
+            margin-bottom: 2rem;
+        }
+
+        .features-list li {
+            padding: 0.5rem 0;
+            color: #333;
+            display: flex;
+            align-items: center;
+        }
+
+        .features-list li::before {
+            content: "✅";
+            margin-right: 0.5rem;
+        }
+
+        .subscribe-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .subscribe-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);
+        }
+
+        .subscribe-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .free-btn {
+            background: linear-gradient(135deg, #10b981, #34d399);
+        }
+
+        .enterprise-btn {
+            background: linear-gradient(135deg, #f59e0b, #f97316);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 2rem 0;
+            color: white;
+        }
+
+        .error {
+            background: rgba(239, 68, 68, 0.9);
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .pricing-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .pricing-card.popular {
+                transform: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Piani e Prezzi Enterprise</h1>
+            <p>Scegli il piano perfetto per far crescere la tua reputazione online</p>
+        </div>
+
+        <div class="billing-toggle">
+            <div class="toggle-switch">
+                <div class="toggle-option active" onclick="switchBilling('monthly')">Mensile</div>
+                <div class="toggle-option" onclick="switchBilling('yearly')">Annuale (2 mesi gratis)</div>
+            </div>
+        </div>
+
+        <div class="error" id="error-message"></div>
+        <div class="loading" id="loading">🔄 Preparando pagamento...</div>
+
+        <div class="pricing-grid" id="pricing-grid">
+            <!-- Plans will be loaded dynamically -->
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const STRIPE_PUBLISHABLE_KEY = 'U5PHG*R2s8@Fz/N'; // Your publishable key
+        const stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
+        
+        let currentBilling = 'monthly';
+        let plans = [];
+
+        // Load plans from config
+        async function loadPlans() {
+            try {
+                const response = await fetch('/src/config/plans.js');
+                const text = await response.text();
+                
+                // Extract subscriptionPlans from the module
+                eval(text.replace('module.exports =', 'window.plansModule ='));
+                plans = window.plansModule.subscriptionPlans;
+                
+                renderPlans();
+            } catch (error) {
+                console.error('Error loading plans:', error);
+                showError('Errore nel caricamento dei piani. Riprova più tardi.');
+            }
+        }
+
+        // Render pricing plans
+        function renderPlans() {
+            const grid = document.getElementById('pricing-grid');
+            grid.innerHTML = '';
+
+            plans.forEach(plan => {
+                const card = createPlanCard(plan);
+                grid.appendChild(card);
+            });
+        }
+
+        // Create plan card
+        function createPlanCard(plan) {
+            const div = document.createElement('div');
+            div.className = `pricing-card ${plan.popular ? 'popular' : ''}`;
+            
+            const price = plan.price[currentBilling];
+            const priceDisplay = price === null ? 'Custom' : `€${price}`;
+            const interval = currentBilling === 'yearly' ? '/anno' : '/mese';
+
+            div.innerHTML = `
+                ${plan.popular ? '<div class="popular-badge">PIÙ POPOLARE</div>' : ''}
+                <div class="plan-name">${plan.displayName}</div>
+                <div class="plan-tagline">${plan.tagline}</div>
+                <div class="plan-price">
+                    ${price !== null ? '<span class="currency">€</span>' : ''}${price || 'Custom'}
+                </div>
+                <div class="plan-interval">${price !== null ? interval : 'Contatta il team'}</div>
+                <ul class="features-list">
+                    ${getFeaturesList(plan)}
+                </ul>
+                <button class="subscribe-btn ${plan.id === 'free' ? 'free-btn' : ''} ${plan.id === 'enterprise' ? 'enterprise-btn' : ''}" 
+                        onclick="handleSubscribe('${plan.id}', '${currentBilling}')">
+                    ${getButtonText(plan)}
+                </button>
+            `;
+
+            return div;
+        }
+
+        // Get features list HTML
+        function getFeaturesList(plan) {
+            const features = [
+                `${plan.limits?.reviewInvitesPerMonth === null ? 'Inviti illimitati' : plan.limits?.reviewInvitesPerMonth + ' inviti/mese'}`,
+                `${plan.limits?.teamMembers === null ? 'Team illimitato' : plan.limits?.teamMembers + ' membri team'}`,
+                `${plan.limits?.apiRequestsPerMonth === null ? 'API illimitate' : plan.limits?.apiRequestsPerMonth + ' API calls/mese'}`,
+                `Supporto ${plan.limits?.supportLevel === 'community' ? 'community' : plan.limits?.supportLevel}`
+            ];
+
+            return features.map(f => `<li>${f}</li>`).join('');
+        }
+
+        // Get button text
+        function getButtonText(plan) {
+            if (plan.id === 'free') return 'Inizia Gratis';
+            if (plan.id === 'enterprise') return 'Contatta Vendite';
+            return 'Inizia Ora';
+        }
+
+        // Handle subscription
+        async function handleSubscribe(planId, billingInterval) {
+            if (planId === 'free') {
+                window.location.href = '/';
+                return;
+            }
+
+            if (planId === 'enterprise') {
+                window.location.href = 'mailto:sales@socialtrust.com?subject=Enterprise Plan Inquiry';
+                return;
+            }
+
+            const button = event.target;
+            button.disabled = true;
+            button.textContent = 'Preparando...';
+
+            showLoading();
+
+            try {
+                // Get price ID based on plan and interval
+                const priceId = getPriceId(planId, billingInterval);
+                
+                if (!priceId) {
+                    throw new Error('Price ID non trovato per questo piano');
+                }
+
+                // Create checkout session
+                const response = await fetch('/.netlify/functions/stripe-create-checkout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        priceId: priceId,
+                        planId: planId,
+                        billingInterval: billingInterval,
+                        customerEmail: getCustomerEmail()
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    throw new Error(data.error || 'Errore nella creazione della sessione di pagamento');
+                }
+
+                // Redirect to Stripe Checkout
+                window.location.href = data.checkoutUrl;
+
+            } catch (error) {
+                console.error('Subscription error:', error);
+                showError(error.message);
+                button.disabled = false;
+                button.textContent = getButtonText(plans.find(p => p.id === planId));
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Get price ID for plan and interval
+        function getPriceId(planId, interval) {
+            // This would be populated from environment variables
+            const priceIds = {
+                'plus': {
+                    'monthly': process.env.STRIPE_PLUS_MONTHLY_PRICE_ID,
+                    'yearly': process.env.STRIPE_PLUS_YEARLY_PRICE_ID
+                },
+                'premium': {
+                    'monthly': process.env.STRIPE_PREMIUM_MONTHLY_PRICE_ID,
+                    'yearly': process.env.STRIPE_PREMIUM_YEARLY_PRICE_ID
+                },
+                'advanced': {
+                    'monthly': process.env.STRIPE_ADVANCED_MONTHLY_PRICE_ID,
+                    'yearly': process.env.STRIPE_ADVANCED_YEARLY_PRICE_ID
+                }
+            };
+
+            return priceIds[planId]?.[interval];
+        }
+
+        // Get customer email (from localStorage or prompt)
+        function getCustomerEmail() {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            return user.email || prompt('Inserisci la tua email aziendale:');
+        }
+
+        // Switch billing interval
+        function switchBilling(interval) {
+            currentBilling = interval;
+            
+            // Update toggle UI
+            document.querySelectorAll('.toggle-option').forEach(opt => {
+                opt.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Re-render plans
+            renderPlans();
+        }
+
+        // Utility functions
+        function showError(message) {
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', loadPlans);
+    </script>
+</body>
+</html>
