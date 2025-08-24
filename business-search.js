@@ -1,11 +1,8 @@
-// Real Business Search with Social Media APIs Integration
+// Business Search with Proxy API (no user API keys required)
 class BusinessSearch {
   constructor() {
     this.dbAPI = dbAPI;
-    this.metaAPI = metaAPI;
-    this.linkedInAPI = linkedInAPI;
-    this.twitterAPI = twitterAPI;
-    this.tikTokAPI = tikTokAPI;
+    this.socialProxy = socialProxy;
     this.cache = new Map();
     this.searchTimeout = null;
     this.cacheTimeout = 1800000; // 30 minutes
@@ -29,8 +26,9 @@ class BusinessSearch {
       const dbResult = await this.dbAPI.searchBusinesses(query, platform);
       let results = dbResult.success ? dbResult.businesses : [];
 
-      // Search across social media APIs
-      const socialResults = await this.searchSocialMediaAPIs(query, platform);
+      // Search via proxy (handles all social media APIs server-side)
+      const proxyResult = await this.socialProxy.searchBusiness(query, platform);
+      const socialResults = proxyResult.success ? proxyResult.results : [];
       
       // Merge and deduplicate results
       const mergedResults = this.mergeAndDeduplicateResults(results, socialResults);
@@ -50,48 +48,13 @@ class BusinessSearch {
     }
   }
 
-  // Search across all social media APIs
-  async searchSocialMediaAPIs(query, platform) {
-    const searches = [];
-    
+  // Verify business via proxy
+  async verifyBusinessViaProxy(businessName, platform) {
     try {
-      if (platform === 'all' || platform === 'instagram') {
-        searches.push(this.metaAPI.searchInstagramBusiness(query));
-      }
-      
-      if (platform === 'all' || platform === 'facebook') {
-        searches.push(this.metaAPI.searchFacebookPages(query));
-      }
-      
-      if (platform === 'all' || platform === 'linkedin') {
-        searches.push(this.linkedInAPI.searchCompanies(query));
-      }
-      
-      if (platform === 'all' || platform === 'twitter') {
-        searches.push(this.twitterAPI.searchBusinessProfiles(query));
-      }
-      
-      if (platform === 'all' || platform === 'tiktok') {
-        searches.push(this.tikTokAPI.searchBusinessProfiles(query));
-      }
-
-      // Execute all searches in parallel
-      const results = await Promise.allSettled(searches);
-      
-      // Collect successful results
-      const socialResults = [];
-      results.forEach((result, index) => {
-        if (result.status === 'fulfilled' && result.value) {
-          socialResults.push(...result.value);
-        } else if (result.status === 'rejected') {
-          console.error(`Social media search ${index} failed:`, result.reason);
-        }
-      });
-      
-      return socialResults;
+      return await this.socialProxy.verifyBusiness(businessName, platform);
     } catch (error) {
-      console.error('Social media API search error:', error);
-      return [];
+      console.error('Proxy verification error:', error);
+      return { exists: false, error: error.message };
     }
   }
 
@@ -138,35 +101,14 @@ class BusinessSearch {
     }
   }
 
-  // Verify business existence across platforms
+  // Verify business existence via proxy
   async verifyBusiness(businessName, platform) {
     const cacheKey = `verify_${businessName.toLowerCase()}_${platform}`;
     const cached = this.getFromCache(cacheKey);
     if (cached) return cached;
 
     try {
-      let verificationResult;
-      
-      switch (platform) {
-        case 'instagram':
-          verificationResult = await this.metaAPI.verifyBusiness(businessName, 'instagram');
-          break;
-        case 'facebook':
-          verificationResult = await this.metaAPI.verifyBusiness(businessName, 'facebook');
-          break;
-        case 'linkedin':
-          verificationResult = await this.linkedInAPI.verifyCompany(businessName);
-          break;
-        case 'twitter':
-          verificationResult = await this.twitterAPI.verifyBusiness(businessName);
-          break;
-        case 'tiktok':
-          verificationResult = await this.tikTokAPI.verifyBusiness(businessName);
-          break;
-        default:
-          throw new Error(`Unsupported platform: ${platform}`);
-      }
-      
+      const verificationResult = await this.socialProxy.verifyBusiness(businessName, platform);
       this.setCache(cacheKey, verificationResult);
       return verificationResult;
     } catch (error) {
@@ -211,32 +153,21 @@ class BusinessSearch {
     }
   }
 
-  // Get suggestions from social media APIs
+  // Get suggestions from proxy API
   async getAPISuggestions(query, limit) {
     try {
-      const searches = [
-        this.metaAPI.searchInstagramBusiness(query),
-        this.linkedInAPI.searchCompanies(query),
-        this.twitterAPI.searchBusinessProfiles(query)
-      ];
+      const proxyResult = await this.socialProxy.searchBusiness(query, 'all');
       
-      const results = await Promise.allSettled(searches);
-      const suggestions = [];
+      if (proxyResult.success) {
+        return proxyResult.results.slice(0, limit).map(business => ({
+          name: business.name,
+          platform: business.platform,
+          verified: business.verified,
+          source: business.source || 'api'
+        }));
+      }
       
-      results.forEach(result => {
-        if (result.status === 'fulfilled' && result.value) {
-          result.value.slice(0, Math.ceil(limit / 3)).forEach(business => {
-            suggestions.push({
-              name: business.name,
-              platform: business.platform,
-              verified: business.verified,
-              source: 'api'
-            });
-          });
-        }
-      });
-      
-      return suggestions.slice(0, limit);
+      return [];
     } catch (error) {
       console.error('API suggestions error:', error);
       return [];
@@ -310,32 +241,16 @@ class BusinessSearch {
     }
   }
 
-  // Get trending from APIs
+  // Get trending from proxy API
   async getAPITrendingBusinesses(platform, limit) {
     try {
-      const trending = [];
+      const trendingResult = await this.socialProxy.getTrendingBusinesses(platform);
       
-      if (platform === 'all' || platform === 'twitter') {
-        const twitterTrending = await this.twitterAPI.getTrendingBusinessTopics();
-        trending.push(...twitterTrending.map(trend => ({
-          name: trend.name,
-          platform: 'twitter',
-          volume: trend.volume,
-          source: 'api'
-        })));
+      if (trendingResult.success) {
+        return trendingResult.businesses.slice(0, limit);
       }
       
-      if (platform === 'all' || platform === 'tiktok') {
-        const tiktokTrending = await this.tikTokAPI.getTrendingHashtags();
-        trending.push(...tiktokTrending.map(hashtag => ({
-          name: hashtag.name,
-          platform: 'tiktok',
-          volume: hashtag.publish_count,
-          source: 'api'
-        })));
-      }
-      
-      return trending.slice(0, limit);
+      return [];
     } catch (error) {
       console.error('API trending error:', error);
       return [];
@@ -366,16 +281,17 @@ class BusinessSearch {
     this.cache.clear();
   }
 
-  // Get API status
+  // Get proxy API status
   getAPIStatus() {
     return {
-      rateLimits: rateLimiter.getAllStatuses(),
+      proxyEnabled: true,
       cacheSize: this.cache.size,
-      apis: {
-        meta: !!socialConfig.apiKeys.meta.accessToken,
-        linkedin: !!socialConfig.apiKeys.linkedin.accessToken,
-        twitter: !!socialConfig.apiKeys.twitter.bearerToken,
-        tiktok: !!socialConfig.apiKeys.tiktok.accessToken
+      lastCheck: new Date().toISOString(),
+      features: {
+        businessSearch: true,
+        profileVerification: true,
+        trendingAnalysis: true,
+        multiPlatform: true
       }
     };
   }
