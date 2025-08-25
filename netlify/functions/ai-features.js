@@ -226,28 +226,62 @@ async function analyzeSentiment(event, headers) {
   };
 }
 
-// Generate AI auto-response
+// Generate AI auto-response with usage tracking
 async function generateAutoResponse(event, headers) {
-  const { reviewText, reviewRating, organizationId, businessName = 'il nostro servizio' } = JSON.parse(event.body || '{}');
+  const { reviewText, reviewRating, user_email, businessName = 'il nostro servizio' } = JSON.parse(event.body || '{}');
   
   if (!reviewText) {
     return {
       statusCode: 400,
       headers,
-      body: JSON.stringify({ error: 'Review text is required' })
+      body: JSON.stringify({ error: 'Review text is required for AI auto-response' })
+    };
+  }
+
+  if (!user_email) {
+    return {
+      statusCode: 400,
+      headers,
+      body: JSON.stringify({ error: 'User email is required for usage tracking' })
     };
   }
   
-  // Check feature access
-  if (organizationId) {
-    const hasFeature = await checkFeatureAccess(organizationId, 'ai_automated_responses');
-    if (!hasFeature) {
-      return {
-        statusCode: 403,
-        headers,
-        body: JSON.stringify({ error: 'AI auto-response requires Enterprise plan' })
-      };
-    }
+  console.log(`🤖 AI Auto-Response requested by: ${user_email}`);
+  
+  // Get organization and track usage
+  const org = await getOrganizationByEmail(user_email);
+  if (!org) {
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: 'Could not get user organization' })
+    };
+  }
+  
+  // Check and track AI auto-response usage
+  const usageResult = await checkAndTrackUsage(
+    org.id, 
+    USAGE_METRICS.AI_RESPONSES, 
+    1, 
+    'ai_auto_response'
+  );
+  
+  if (!usageResult.allowed) {
+    return {
+      statusCode: 429,
+      headers,
+      body: JSON.stringify({
+        error: usageResult.error,
+        message: usageResult.message,
+        usage: {
+          current: usageResult.current,
+          limit: usageResult.limit,
+          planId: usageResult.planId,
+          upgradeRequired: usageResult.upgradeRequired
+        },
+        upgrade_message: `Upgrade to ${getNextPlan(usageResult.planId)} plan to get more AI auto-responses`
+      })
+    };
   }
   
   // Analyze sentiment first
@@ -281,20 +315,20 @@ async function generateAutoResponse(event, headers) {
   }
   
   // Store generated response
-  if (organizationId) {
-    await supabase
-      .from('ai_responses')
-      .insert({
-        organization_id: organizationId,
-        original_review: reviewText,
-        review_rating: reviewRating,
-        generated_response: response,
-        sentiment,
-        intensity,
-        used: false,
-        created_at: new Date().toISOString()
-      });
-  }
+  await supabase
+    .from('ai_responses')
+    .insert({
+      organization_id: org.id,
+      original_review: reviewText,
+      review_rating: reviewRating,
+      generated_response: response,
+      sentiment,
+      intensity,
+      used: false,
+      created_at: new Date().toISOString()
+    });
+
+  console.log(`✅ AI auto-response generated for ${user_email}: ${sentiment} (${intensity})`);
   
   return {
     statusCode: 200,
@@ -305,7 +339,15 @@ async function generateAutoResponse(event, headers) {
       sentiment,
       intensity,
       confidence: sentimentData.confidence,
-      suggestions: generateResponseSuggestions(sentiment, context)
+      suggestions: generateResponseSuggestions(sentiment, context),
+      usage_info: {
+        current: usageResult.current,
+        limit: usageResult.limit,
+        remaining: usageResult.remaining,
+        percentage: usageResult.percentage,
+        isNearLimit: usageResult.isNearLimit,
+        planId: usageResult.planId
+      }
     })
   };
 }
