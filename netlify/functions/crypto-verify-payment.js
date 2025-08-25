@@ -371,11 +371,129 @@ async function createSubscription(paymentSession, txHash) {
         }
       });
 
-    console.log('✅ Subscription created for payment:', paymentSession.payment_id);
+    // Activate subscription features via subscription manager
+    await activateSubscriptionFeatures(org.id, paymentSession.plan_id);
+
+    console.log('✅ Subscription created and activated for payment:', paymentSession.payment_id);
+    console.log('🎯 Features unlocked for plan:', paymentSession.plan_id);
 
   } catch (error) {
     console.error('Subscription creation error:', error);
   }
+}
+
+// Activate subscription features via subscription manager
+async function activateSubscriptionFeatures(organizationId, planId) {
+  try {
+    // Reset usage tracking for new subscription
+    await supabase
+      .from('usage_tracking')
+      .upsert({
+        organization_id: organizationId,
+        review_invites_sent: 0,
+        review_responses_received: 0,
+        ai_sentiment_analyses: 0,
+        ai_auto_responses: 0,
+        nft_rewards_distributed: 0,
+        reset_date: new Date().toISOString()
+      }, {
+        onConflict: 'organization_id'
+      });
+
+    // Create feature access log
+    await supabase
+      .from('feature_access_logs')
+      .insert({
+        organization_id: organizationId,
+        plan_id: planId,
+        features_unlocked: JSON.stringify(getPlanFeatures(planId)),
+        activated_at: new Date().toISOString(),
+        activation_method: 'crypto_payment'
+      });
+
+    console.log(`🚀 Features activated for organization ${organizationId} on plan ${planId}`);
+
+  } catch (error) {
+    console.error('Feature activation error:', error);
+  }
+}
+
+// Get plan features configuration
+function getPlanFeatures(planId) {
+  const PLANS = {
+    free: {
+      unlimited_reviews: true,
+      ai_automated_responses: false,
+      advanced_analytics: false,
+      custom_branding: false,
+      api_access: false,
+      white_label_solution: false,
+      priority_support: false,
+      nft_rewards: false,
+      vr_ar_content: false,
+      gamification: false,
+      micro_tipping: false,
+      insights_marketplace: false
+    },
+    plus: {
+      unlimited_reviews: true,
+      ai_automated_responses: true,
+      advanced_analytics: true,
+      custom_branding: false,
+      api_access: false,
+      white_label_solution: false,
+      priority_support: false,
+      nft_rewards: true,
+      vr_ar_content: false,
+      gamification: true,
+      micro_tipping: false,
+      insights_marketplace: false
+    },
+    premium: {
+      unlimited_reviews: true,
+      ai_automated_responses: true,
+      advanced_analytics: true,
+      custom_branding: true,
+      api_access: true,
+      white_label_solution: false,
+      priority_support: true,
+      nft_rewards: true,
+      vr_ar_content: true,
+      gamification: true,
+      micro_tipping: true,
+      insights_marketplace: false
+    },
+    advanced: {
+      unlimited_reviews: true,
+      ai_automated_responses: true,
+      advanced_analytics: true,
+      custom_branding: true,
+      api_access: true,
+      white_label_solution: true,
+      priority_support: true,
+      nft_rewards: true,
+      vr_ar_content: true,
+      gamification: true,
+      micro_tipping: true,
+      insights_marketplace: true
+    },
+    enterprise: {
+      unlimited_reviews: true,
+      ai_automated_responses: true,
+      advanced_analytics: true,
+      custom_branding: true,
+      api_access: true,
+      white_label_solution: true,
+      priority_support: true,
+      nft_rewards: true,
+      vr_ar_content: true,
+      gamification: true,
+      micro_tipping: true,
+      insights_marketplace: true
+    }
+  };
+  
+  return PLANS[planId] || PLANS.free;
 }
 
 // Helper functions
