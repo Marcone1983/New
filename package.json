@@ -1,7 +1,7 @@
 {
   "name": "socialtrust-platform",
-  "version": "1.0.0",
-  "description": "Enterprise social media business rating platform with real payment processing",
+  "version": "2.0.0",
+  "description": "Enterprise social media business rating platform with cryptocurrency payments",
   "main": "index.html",
   "scripts": {
     "dev": "netlify dev",
@@ -9,8 +9,7 @@
     "deploy": "netlify deploy --prod"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.45.4",
-    "stripe": "^14.21.0"
+    "@supabase/supabase-js": "^2.45.4"
   },
   "devDependencies": {
     "netlify-cli": "^17.0.0"
@@ -19,7 +18,11 @@
     "social-media",
     "business-rating",
     "enterprise",
-    "stripe-payments",
+    "cryptocurrency-payments",
+    "blockchain",
+    "ethereum",
+    "polygon",
+    "bsc",
     "pwa"
   ],
   "author": "SocialTrust Team",

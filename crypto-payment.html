@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pagamento Crypto - SocialTrust</title>
+    <meta name="description" content="Completa il tuo pagamento in criptovalute">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+
+        .payment-container {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .payment-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .payment-title {
+            font-size: 2.5rem;
+            color: #4f46e5;
+            margin-bottom: 1rem;
+            font-weight: bold;
+        }
+
+        .payment-subtitle {
+            font-size: 1.2rem;
+            color: #6b7280;
+            margin-bottom: 2rem;
+        }
+
+        .payment-details {
+            background: #f9fafb;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: left;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            font-weight: bold;
+            color: #374151;
+        }
+
+        .detail-value {
+            color: #4f46e5;
+            font-weight: bold;
+        }
+
+        .wallet-address {
+            background: #4f46e5;
+            color: white;
+            padding: 1rem;
+            border-radius: 10px;
+            font-family: monospace;
+            word-break: break-all;
+            margin: 1rem 0;
+            position: relative;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 0.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .copy-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .qr-code {
+            margin: 2rem 0;
+            text-align: center;
+        }
+
+        .qr-placeholder {
+            width: 200px;
+            height: 200px;
+            background: #f3f4f6;
+            border: 2px dashed #d1d5db;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            color: #6b7280;
+            margin: 1rem auto;
+        }
+
+        .timer {
+            background: linear-gradient(135deg, #f59e0b, #f97316);
+            color: white;
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 2rem 0;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .timer.expired {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        .instructions {
+            text-align: left;
+            margin-bottom: 2rem;
+        }
+
+        .instructions h3 {
+            color: #374151;
+            margin-bottom: 1rem;
+        }
+
+        .instructions ol {
+            padding-left: 1.5rem;
+        }
+
+        .instructions li {
+            margin-bottom: 0.5rem;
+            color: #6b7280;
+        }
+
+        .verification-section {
+            border-top: 1px solid #e5e7eb;
+            padding-top: 2rem;
+            margin-top: 2rem;
+        }
+
+        .tx-input-group {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .tx-input {
+            flex: 1;
+            padding: 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+
+        .tx-input:focus {
+            outline: none;
+            border-color: #4f46e5;
+        }
+
+        .verify-btn {
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .verify-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);
+        }
+
+        .verify-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status {
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+        }
+
+        .status.pending {
+            background: rgba(249, 115, 22, 0.1);
+            color: #ea580c;
+            border: 1px solid #fed7aa;
+        }
+
+        .status.confirmed {
+            background: rgba(16, 185, 129, 0.1);
+            color: #059669;
+            border: 1px solid #a7f3d0;
+        }
+
+        .status.expired {
+            background: rgba(239, 68, 68, 0.1);
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+
+        .auto-detection {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid #93c5fd;
+            color: #2563eb;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .explorer-link {
+            color: #4f46e5;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .explorer-link:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .payment-container {
+                padding: 2rem;
+                margin: 1rem;
+            }
+            
+            .payment-title {
+                font-size: 2rem;
+            }
+            
+            .tx-input-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="payment-container">
+        <div class="payment-icon" id="paymentIcon">💎</div>
+        <h1 class="payment-title">Pagamento Crypto</h1>
+        <p class="payment-subtitle">Completa il pagamento con la tua criptovaluta</p>
+
+        <div class="payment-details" id="paymentDetails">
+            <!-- Payment details will be loaded here -->
+        </div>
+
+        <div class="timer" id="timer">
+            ⏰ Tempo rimanente: Caricamento...
+        </div>
+
+        <div class="auto-detection">
+            <strong>🔍 Rilevamento Automatico Attivo</strong><br>
+            Il sistema monitora automaticamente la blockchain per il tuo pagamento. 
+            Non appena invii la transazione, verrà rilevata automaticamente.
+        </div>
+
+        <div class="verification-section">
+            <h3>Verifica Manuale Transazione (Opzionale)</h3>
+            <p style="color: #6b7280; margin-bottom: 1rem;">
+                Se vuoi verificare immediatamente, incolla qui l'hash della transazione:
+            </p>
+            
+            <div class="tx-input-group">
+                <input 
+                    type="text" 
+                    class="tx-input" 
+                    id="txHashInput"
+                    placeholder="0x1234567890abcdef... (Transaction Hash)"
+                >
+                <button class="verify-btn" onclick="verifyTransaction()">
+                    Verifica
+                </button>
+            </div>
+        </div>
+
+        <div class="status pending" id="statusDiv">
+            <strong>📋 Status:</strong> <span id="statusText">In attesa di pagamento...</span>
+        </div>
+
+        <div class="loading" id="loading">
+            🔄 Verificando pagamento...
+        </div>
+
+        <div style="margin-top: 2rem;">
+            <a href="/crypto-pricing.html" style="color: #6b7280; text-decoration: none;">← Torna ai piani</a>
+        </div>
+    </div>
+
+    <script>
+        let paymentSession = null;
+        let timerInterval = null;
+        let autoCheckInterval = null;
+        let sessionId = null;
+
+        // Get session ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        sessionId = urlParams.get('session');
+
+        if (!sessionId) {
+            alert('Sessione di pagamento non valida');
+            window.location.href = '/crypto-pricing.html';
+        }
+
+        // Initialize payment page
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadPaymentSession();
+            startTimer();
+            startAutoCheck();
+        });
+
+        // Load payment session details
+        async function loadPaymentSession() {
+            try {
+                const response = await fetch(`/.netlify/functions/crypto-verify-payment?paymentId=${sessionId}`);
+                const data = await response.json();
+
+                if (!data.success) {
+                    throw new Error(data.error || 'Sessione non trovata');
+                }
+
+                paymentSession = data.paymentSession;
+                updateUI();
+
+                // Check if payment already confirmed
+                if (paymentSession.status === 'confirmed') {
+                    handlePaymentConfirmed();
+                }
+
+            } catch (error) {
+                console.error('Error loading payment session:', error);
+                document.getElementById('statusDiv').className = 'status expired';
+                document.getElementById('statusText').textContent = 'Errore nel caricamento della sessione';
+            }
+        }
+
+        // Update UI with payment details
+        function updateUI() {
+            const details = document.getElementById('paymentDetails');
+            
+            details.innerHTML = `
+                <div class="detail-row">
+                    <span class="detail-label">Piano:</span>
+                    <span class="detail-value">${getPlanDisplayName(paymentSession.id)}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Prezzo USD:</span>
+                    <span class="detail-value">$${paymentSession.usdAmount}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Importo Crypto:</span>
+                    <span class="detail-value">${paymentSession.cryptoAmount} ${paymentSession.cryptoSymbol}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Network:</span>
+                    <span class="detail-value">${getNetworkName(paymentSession.networkId)} ${getNetworkIcon(paymentSession.networkId)}</span>
+                </div>
+                
+                <div style="margin-top: 2rem;">
+                    <h3 style="color: #374151; margin-bottom: 1rem;">Invia il pagamento a:</h3>
+                    <div class="wallet-address">
+                        ${paymentSession.receiverWallet}
+                        <button class="copy-btn" onclick="copyToClipboard('${paymentSession.receiverWallet}')">
+                            Copia
+                        </button>
+                    </div>
+                    
+                    <div class="instructions">
+                        <h3>Istruzioni:</h3>
+                        <ol>
+                            <li>Apri il tuo wallet crypto (MetaMask, Trust Wallet, etc.)</li>
+                            <li>Assicurati di essere sulla rete <strong>${getNetworkName(paymentSession.networkId)}</strong></li>
+                            <li>Invia esattamente <strong>${paymentSession.cryptoAmount} ${paymentSession.cryptoSymbol}</strong></li>
+                            <li>All'indirizzo wallet sopra indicato</li>
+                            <li>Il pagamento sarà confermato automaticamente dopo le conferme blockchain</li>
+                        </ol>
+                    </div>
+                </div>
+            `;
+
+            // Update payment icon based on token
+            const iconMap = {
+                'ETH': '🔷',
+                'POL': '🟣', 
+                'BNB': '🟡',
+                'USDC': '💵',
+                'USDT': '💰'
+            };
+            document.getElementById('paymentIcon').textContent = iconMap[paymentSession.cryptoSymbol] || '💎';
+        }
+
+        // Start countdown timer
+        function startTimer() {
+            if (!paymentSession) return;
+
+            timerInterval = setInterval(() => {
+                const now = new Date();
+                const expires = new Date(paymentSession.expiresAt);
+                const timeLeft = expires - now;
+
+                if (timeLeft <= 0) {
+                    document.getElementById('timer').className = 'timer expired';
+                    document.getElementById('timer').textContent = '⏰ Sessione scaduta';
+                    document.getElementById('statusDiv').className = 'status expired';
+                    document.getElementById('statusText').textContent = 'Sessione di pagamento scaduta';
+                    clearInterval(timerInterval);
+                    clearInterval(autoCheckInterval);
+                    return;
+                }
+
+                const minutes = Math.floor(timeLeft / 60000);
+                const seconds = Math.floor((timeLeft % 60000) / 1000);
+                
+                document.getElementById('timer').textContent = 
+                    `⏰ Tempo rimanente: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        // Start automatic payment checking
+        function startAutoCheck() {
+            autoCheckInterval = setInterval(async () => {
+                await checkPaymentStatus();
+            }, 10000); // Check every 10 seconds
+        }
+
+        // Check payment status automatically
+        async function checkPaymentStatus() {
+            if (!paymentSession || paymentSession.status === 'confirmed') return;
+
+            try {
+                const response = await fetch(`/.netlify/functions/crypto-verify-payment?paymentId=${sessionId}`);
+                const data = await response.json();
+
+                if (data.success && data.paymentFound && data.transactions.length > 0) {
+                    // Payment detected!
+                    const tx = data.transactions[0];
+                    document.getElementById('statusDiv').className = 'status confirmed';
+                    document.getElementById('statusText').innerHTML = `
+                        ✅ Pagamento rilevato! 
+                        <a href="${getExplorerUrl(paymentSession.networkId)}/tx/${tx.hash}" 
+                           target="_blank" class="explorer-link">
+                            Vedi su blockchain explorer
+                        </a>
+                    `;
+                    
+                    // Verify the specific transaction
+                    await verifySpecificTransaction(tx.hash);
+                }
+
+            } catch (error) {
+                console.error('Auto-check error:', error);
+            }
+        }
+
+        // Manual transaction verification
+        async function verifyTransaction() {
+            const txHash = document.getElementById('txHashInput').value.trim();
+            
+            if (!txHash) {
+                alert('Inserisci l\'hash della transazione');
+                return;
+            }
+
+            if (!txHash.startsWith('0x') || txHash.length !== 66) {
+                alert('Hash transazione non valido. Deve iniziare con 0x e essere lungo 66 caratteri');
+                return;
+            }
+
+            await verifySpecificTransaction(txHash);
+        }
+
+        // Verify specific transaction
+        async function verifySpecificTransaction(txHash) {
+            const button = document.querySelector('.verify-btn');
+            button.disabled = true;
+            button.textContent = 'Verificando...';
+            
+            showLoading();
+
+            try {
+                const response = await fetch('/.netlify/functions/crypto-verify-payment', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        paymentId: sessionId,
+                        txHash: txHash
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.status === 'confirmed') {
+                    handlePaymentConfirmed(data.transaction);
+                } else {
+                    document.getElementById('statusDiv').className = 'status pending';
+                    document.getElementById('statusText').textContent = 
+                        data.error || 'Transazione non ancora confermata o non valida';
+                }
+
+            } catch (error) {
+                console.error('Verification error:', error);
+                document.getElementById('statusDiv').className = 'status expired';
+                document.getElementById('statusText').textContent = 'Errore nella verifica della transazione';
+            } finally {
+                hideLoading();
+                button.disabled = false;
+                button.textContent = 'Verifica';
+            }
+        }
+
+        // Handle payment confirmed
+        function handlePaymentConfirmed(transaction = null) {
+            clearInterval(timerInterval);
+            clearInterval(autoCheckInterval);
+
+            document.getElementById('statusDiv').className = 'status confirmed';
+            document.getElementById('timer').style.display = 'none';
+            
+            let statusText = '🎉 Pagamento confermato! Il tuo abbonamento è stato attivato.';
+            
+            if (transaction) {
+                statusText += ` <a href="${getExplorerUrl(paymentSession.networkId)}/tx/${transaction.hash}" 
+                                  target="_blank" class="explorer-link">
+                                  Vedi transazione
+                               </a>`;
+            }
+            
+            document.getElementById('statusText').innerHTML = statusText;
+
+            // Redirect to success page after 3 seconds
+            setTimeout(() => {
+                window.location.href = `/success.html?payment=crypto&session=${sessionId}`;
+            }, 3000);
+        }
+
+        // Utility functions
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                const button = event.target;
+                const originalText = button.textContent;
+                button.textContent = 'Copiato!';
+                setTimeout(() => {
+                    button.textContent = originalText;
+                }, 2000);
+            });
+        }
+
+        function getPlanDisplayName(planId) {
+            const names = {
+                'plus': 'Plus (Growth)',
+                'premium': 'Premium (Professional)',
+                'advanced': 'Advanced (Enterprise Ready)'
+            };
+            return names[planId] || planId;
+        }
+
+        function getNetworkName(networkId) {
+            const names = {
+                1: 'Ethereum',
+                137: 'Polygon',
+                56: 'BSC'
+            };
+            return names[networkId] || 'Unknown';
+        }
+
+        function getNetworkIcon(networkId) {
+            const icons = {
+                1: '🔷',
+                137: '🟣',
+                56: '🟡'
+            };
+            return icons[networkId] || '💎';
+        }
+
+        function getExplorerUrl(networkId) {
+            const urls = {
+                1: 'https://etherscan.io',
+                137: 'https://polygonscan.com',
+                56: 'https://bscscan.com'
+            };
+            return urls[networkId] || '';
+        }
+
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

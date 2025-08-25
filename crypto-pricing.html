@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SocialTrust - Piani e Prezzi (Pagamenti Crypto)</title>
+    <meta name="description" content="Scegli il piano perfetto - Pagamenti in ETH, USDC, USDT su Ethereum, Polygon, BSC">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .crypto-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .supported-networks {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .network-badge {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .pricing-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            position: relative;
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .pricing-card.popular {
+            border: 3px solid #4f46e5;
+            transform: scale(1.05);
+        }
+
+        .popular-badge {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #4f46e5;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .plan-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .plan-tagline {
+            color: #666;
+            margin-bottom: 1.5rem;
+        }
+
+        .plan-price {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #4f46e5;
+            margin-bottom: 0.5rem;
+        }
+
+        .plan-price .currency {
+            font-size: 1.2rem;
+            vertical-align: top;
+        }
+
+        .crypto-equivalent {
+            font-size: 0.9rem;
+            color: #888;
+            margin-bottom: 1.5rem;
+        }
+
+        .billing-toggle {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .toggle-switch {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 25px;
+            padding: 0.5rem;
+            display: inline-flex;
+            gap: 0.5rem;
+        }
+
+        .toggle-option {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-option.active {
+            background: #4f46e5;
+            color: white;
+        }
+
+        .features-list {
+            list-style: none;
+            margin-bottom: 2rem;
+        }
+
+        .features-list li {
+            padding: 0.5rem 0;
+            color: #333;
+            display: flex;
+            align-items: center;
+        }
+
+        .features-list li::before {
+            content: "✅";
+            margin-right: 0.5rem;
+        }
+
+        .subscribe-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+        }
+
+        .subscribe-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);
+        }
+
+        .subscribe-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .free-btn {
+            background: linear-gradient(135deg, #10b981, #34d399);
+        }
+
+        .enterprise-btn {
+            background: linear-gradient(135deg, #f59e0b, #f97316);
+        }
+
+        /* Crypto Payment Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .network-selector {
+            margin-bottom: 2rem;
+        }
+
+        .network-option {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .network-option:hover {
+            border-color: #4f46e5;
+        }
+
+        .network-option.selected {
+            border-color: #4f46e5;
+            background: rgba(79, 70, 229, 0.05);
+        }
+
+        .token-selector {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .token-option {
+            flex: 1;
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .token-option:hover {
+            border-color: #4f46e5;
+        }
+
+        .token-option.selected {
+            border-color: #4f46e5;
+            background: rgba(79, 70, 229, 0.05);
+        }
+
+        .payment-summary {
+            background: #f9fafb;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 2rem 0;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .summary-row:last-child {
+            font-weight: bold;
+            padding-top: 0.5rem;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .error, .success {
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            display: none;
+        }
+
+        .error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+
+        .success {
+            background: rgba(16, 185, 129, 0.1);
+            color: #059669;
+            border: 1px solid #a7f3d0;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .pricing-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .pricing-card.popular {
+                transform: none;
+            }
+
+            .supported-networks {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="crypto-badge">🚀 Powered by Blockchain Technology</div>
+            <h1>Piani e Prezzi Enterprise</h1>
+            <p>Pagamenti sicuri in criptovalute - Multi-chain support</p>
+            
+            <div class="supported-networks">
+                <div class="network-badge">🔷 Ethereum (ETH, USDC, USDT)</div>
+                <div class="network-badge">🟣 Polygon (POL, USDC, USDT)</div>
+                <div class="network-badge">🟡 BSC (BNB, USDC, USDT)</div>
+            </div>
+        </div>
+
+        <div class="billing-toggle">
+            <div class="toggle-switch">
+                <div class="toggle-option active" onclick="switchBilling('monthly')">Mensile</div>
+                <div class="toggle-option" onclick="switchBilling('yearly')">Annuale (2 mesi gratis)</div>
+            </div>
+        </div>
+
+        <div class="pricing-grid" id="pricing-grid">
+            <!-- Plans will be loaded dynamically -->
+        </div>
+    </div>
+
+    <!-- Crypto Payment Modal -->
+    <div class="modal" id="paymentModal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal()">&times;</button>
+            
+            <div class="modal-header">
+                <h2>Pagamento Crypto</h2>
+                <p>Piano: <span id="selected-plan"></span></p>
+            </div>
+
+            <div class="network-selector">
+                <h3>Seleziona Blockchain:</h3>
+                
+                <div class="network-option" onclick="selectNetwork(1, 'Ethereum')">
+                    <div style="margin-right: 1rem; font-size: 1.5rem;">🔷</div>
+                    <div>
+                        <strong>Ethereum</strong>
+                        <div style="font-size: 0.8rem; color: #666;">ETH, USDC, USDT</div>
+                    </div>
+                </div>
+
+                <div class="network-option" onclick="selectNetwork(137, 'Polygon')">
+                    <div style="margin-right: 1rem; font-size: 1.5rem;">🟣</div>
+                    <div>
+                        <strong>Polygon</strong>
+                        <div style="font-size: 0.8rem; color: #666;">POL, USDC, USDT - Gas fees bassissime</div>
+                    </div>
+                </div>
+
+                <div class="network-option" onclick="selectNetwork(56, 'BSC')">
+                    <div style="margin-right: 1rem; font-size: 1.5rem;">🟡</div>
+                    <div>
+                        <strong>BSC (Binance Smart Chain)</strong>
+                        <div style="font-size: 0.8rem; color: #666;">BNB, USDC, USDT - Gas fees economiche</div>
+                    </div>
+                </div>
+
+                <div class="token-selector" id="tokenSelector" style="display: none;">
+                    <h4 style="width: 100%; margin-bottom: 1rem;">Seleziona Token:</h4>
+                </div>
+            </div>
+
+            <div class="payment-summary" id="paymentSummary" style="display: none;">
+                <div class="summary-row">
+                    <span>Piano:</span>
+                    <span id="summary-plan"></span>
+                </div>
+                <div class="summary-row">
+                    <span>Fatturazione:</span>
+                    <span id="summary-interval"></span>
+                </div>
+                <div class="summary-row">
+                    <span>Prezzo USD:</span>
+                    <span id="summary-usd"></span>
+                </div>
+                <div class="summary-row">
+                    <span>Importo Crypto:</span>
+                    <span id="summary-crypto"></span>
+                </div>
+                <div class="summary-row">
+                    <span>Network:</span>
+                    <span id="summary-network"></span>
+                </div>
+            </div>
+
+            <div class="error" id="error-message"></div>
+            <div class="success" id="success-message"></div>
+            <div class="loading" id="loading">🔄 Creando sessione di pagamento...</div>
+
+            <button class="subscribe-btn" id="proceedPayment" onclick="proceedToPayment()" style="display: none;">
+                Procedi al Pagamento 🚀
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let currentBilling = 'monthly';
+        let plans = [];
+        let selectedNetworkId = null;
+        let selectedNetworkName = '';
+        let selectedToken = '';
+        let selectedPlan = null;
+
+        // Plan configuration
+        const planConfig = [
+            {
+                id: 'free',
+                name: 'Free',
+                displayName: 'Starter',
+                price: { monthly: 0, yearly: 0 },
+                tagline: 'Build trust, no strings attached',
+                popular: false,
+                features: [
+                    '50 inviti recensioni/mese',
+                    '1 membro team',
+                    '1,000 API calls/mese',
+                    'Supporto community'
+                ]
+            },
+            {
+                id: 'plus',
+                name: 'Plus',
+                displayName: 'Growth',
+                price: { monthly: 99, yearly: 990 },
+                tagline: 'Grow faster with smart automation',
+                popular: true,
+                features: [
+                    '200 inviti recensioni/mese',
+                    '3 membri team',
+                    '5,000 API calls/mese',
+                    'Supporto email',
+                    'Analytics base',
+                    'Integrazione Zendesk'
+                ]
+            },
+            {
+                id: 'premium',
+                name: 'Premium',
+                displayName: 'Professional',
+                price: { monthly: 249, yearly: 2490 },
+                tagline: 'Professional tools for serious growth',
+                popular: false,
+                features: [
+                    '1,000 inviti recensioni/mese',
+                    '10 membri team',
+                    '20,000 API calls/mese',
+                    'Supporto prioritario',
+                    'Report avanzati',
+                    'Automazione marketing'
+                ]
+            },
+            {
+                id: 'advanced',
+                name: 'Advanced',
+                displayName: 'Enterprise Ready',
+                price: { monthly: 499, yearly: 4990 },
+                tagline: 'Stay ahead of the competition',
+                popular: false,
+                features: [
+                    '5,000 inviti recensioni/mese',
+                    '25 membri team',
+                    '50,000 API calls/mese',
+                    'Supporto dedicato',
+                    'Market intelligence',
+                    'Analisi sentimenti',
+                    'Analisi competitor'
+                ]
+            }
+        ];
+
+        // Network token configuration
+        const networkTokens = {
+            1: [
+                { symbol: 'ETH', name: 'Ethereum', icon: '🔷' },
+                { symbol: 'USDC', name: 'USD Coin', icon: '💵' },
+                { symbol: 'USDT', name: 'Tether', icon: '💰' }
+            ],
+            137: [
+                { symbol: 'POL', name: 'Polygon', icon: '🟣' },
+                { symbol: 'USDC', name: 'USD Coin', icon: '💵' },
+                { symbol: 'USDT', name: 'Tether', icon: '💰' }
+            ],
+            56: [
+                { symbol: 'BNB', name: 'Binance Coin', icon: '🟡' },
+                { symbol: 'USDC', name: 'USD Coin', icon: '💵' },
+                { symbol: 'USDT', name: 'Tether', icon: '💰' }
+            ]
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            plans = planConfig;
+            renderPlans();
+        });
+
+        // Render pricing plans
+        function renderPlans() {
+            const grid = document.getElementById('pricing-grid');
+            grid.innerHTML = '';
+
+            plans.forEach(plan => {
+                const card = createPlanCard(plan);
+                grid.appendChild(card);
+            });
+        }
+
+        // Create plan card
+        function createPlanCard(plan) {
+            const div = document.createElement('div');
+            div.className = `pricing-card ${plan.popular ? 'popular' : ''}`;
+            
+            const price = plan.price[currentBilling];
+            const priceDisplay = price === 0 ? 'Free' : `$${price}`;
+            const interval = currentBilling === 'yearly' ? '/anno' : '/mese';
+
+            div.innerHTML = `
+                ${plan.popular ? '<div class="popular-badge">PIÙ POPOLARE</div>' : ''}
+                <div class="plan-name">${plan.displayName}</div>
+                <div class="plan-tagline">${plan.tagline}</div>
+                <div class="plan-price">
+                    ${price !== 0 ? '<span class="currency">$</span>' : ''}${price || 'Free'}
+                </div>
+                ${price > 0 ? `<div class="crypto-equivalent">≈ ${(price / 3200).toFixed(4)} ETH | ${price} USDC</div>` : ''}
+                <div class="plan-interval">${price !== 0 ? interval : 'Sempre gratuito'}</div>
+                <ul class="features-list">
+                    ${plan.features.map(f => `<li>${f}</li>`).join('')}
+                </ul>
+                <button class="subscribe-btn ${plan.id === 'free' ? 'free-btn' : ''}" 
+                        onclick="handleSubscribe('${plan.id}', '${currentBilling}')">
+                    ${plan.id === 'free' ? 'Inizia Gratis' : 'Paga con Crypto 🚀'}
+                </button>
+            `;
+
+            return div;
+        }
+
+        // Handle subscription
+        function handleSubscribe(planId, billingInterval) {
+            if (planId === 'free') {
+                window.location.href = '/';
+                return;
+            }
+
+            selectedPlan = { id: planId, interval: billingInterval };
+            const plan = plans.find(p => p.id === planId);
+            
+            document.getElementById('selected-plan').textContent = `${plan.displayName} (${billingInterval})`;
+            document.getElementById('paymentModal').style.display = 'block';
+        }
+
+        // Select network
+        function selectNetwork(networkId, networkName) {
+            selectedNetworkId = networkId;
+            selectedNetworkName = networkName;
+            
+            // Update UI
+            document.querySelectorAll('.network-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            event.currentTarget.classList.add('selected');
+            
+            // Show token selector
+            showTokenSelector(networkId);
+        }
+
+        // Show token selector
+        function showTokenSelector(networkId) {
+            const selector = document.getElementById('tokenSelector');
+            const tokens = networkTokens[networkId];
+            
+            selector.innerHTML = '<h4 style="width: 100%; margin-bottom: 1rem;">Seleziona Token:</h4>';
+            
+            tokens.forEach(token => {
+                const tokenDiv = document.createElement('div');
+                tokenDiv.className = 'token-option';
+                tokenDiv.innerHTML = `
+                    <div style="font-size: 1.2rem;">${token.icon}</div>
+                    <div><strong>${token.symbol}</strong></div>
+                    <div style="font-size: 0.8rem; color: #666;">${token.name}</div>
+                `;
+                tokenDiv.onclick = () => selectToken(token.symbol);
+                selector.appendChild(tokenDiv);
+            });
+            
+            selector.style.display = 'block';
+        }
+
+        // Select token
+        function selectToken(token) {
+            selectedToken = token;
+            
+            // Update UI
+            document.querySelectorAll('.token-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            event.currentTarget.classList.add('selected');
+            
+            // Show payment summary
+            showPaymentSummary();
+        }
+
+        // Show payment summary
+        function showPaymentSummary() {
+            const plan = plans.find(p => p.id === selectedPlan.id);
+            const usdAmount = plan.price[selectedPlan.interval];
+            
+            // Simple price estimation (in real app, would fetch live prices)
+            const cryptoRates = {
+                'ETH': 3200,
+                'POL': 1.2,
+                'BNB': 600,
+                'USDC': 1,
+                'USDT': 1
+            };
+            
+            const cryptoAmount = (usdAmount / cryptoRates[selectedToken]).toFixed(6);
+            
+            document.getElementById('summary-plan').textContent = plan.displayName;
+            document.getElementById('summary-interval').textContent = selectedPlan.interval === 'yearly' ? 'Annuale' : 'Mensile';
+            document.getElementById('summary-usd').textContent = `$${usdAmount}`;
+            document.getElementById('summary-crypto').textContent = `${cryptoAmount} ${selectedToken}`;
+            document.getElementById('summary-network').textContent = selectedNetworkName;
+            
+            document.getElementById('paymentSummary').style.display = 'block';
+            document.getElementById('proceedPayment').style.display = 'block';
+        }
+
+        // Proceed to payment
+        async function proceedToPayment() {
+            const button = document.getElementById('proceedPayment');
+            button.disabled = true;
+            button.textContent = 'Creando pagamento...';
+            
+            showLoading();
+
+            try {
+                const plan = plans.find(p => p.id === selectedPlan.id);
+                
+                const response = await fetch('/.netlify/functions/crypto-create-payment', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        planId: selectedPlan.id,
+                        billingInterval: selectedPlan.interval,
+                        customerEmail: getCustomerEmail(),
+                        selectedNetwork: selectedNetworkId,
+                        selectedToken: selectedToken
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    throw new Error(data.error || 'Errore nella creazione del pagamento');
+                }
+
+                // Redirect to payment page with session ID
+                window.location.href = `/crypto-payment.html?session=${data.paymentSession.paymentId}`;
+
+            } catch (error) {
+                console.error('Payment creation error:', error);
+                showError(error.message);
+                button.disabled = false;
+                button.textContent = 'Procedi al Pagamento 🚀';
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Switch billing interval
+        function switchBilling(interval) {
+            currentBilling = interval;
+            
+            // Update toggle UI
+            document.querySelectorAll('.toggle-option').forEach(opt => {
+                opt.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Re-render plans
+            renderPlans();
+        }
+
+        // Utility functions
+        function getCustomerEmail() {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            return user.email || prompt('Inserisci la tua email aziendale:');
+        }
+
+        function closeModal() {
+            document.getElementById('paymentModal').style.display = 'none';
+            resetModal();
+        }
+
+        function resetModal() {
+            selectedNetworkId = null;
+            selectedNetworkName = '';
+            selectedToken = '';
+            selectedPlan = null;
+            
+            document.querySelectorAll('.network-option').forEach(opt => opt.classList.remove('selected'));
+            document.querySelectorAll('.token-option').forEach(opt => opt.classList.remove('selected'));
+            document.getElementById('tokenSelector').style.display = 'none';
+            document.getElementById('paymentSummary').style.display = 'none';
+            document.getElementById('proceedPayment').style.display = 'none';
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('success-message');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+        }
+
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('paymentModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>
