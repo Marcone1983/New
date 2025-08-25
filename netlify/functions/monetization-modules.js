@@ -1,5 +1,6 @@
-// Future Monetization Modules Implementation
+// Future Monetization Modules Implementation with Usage Tracking
 const { createClient } = require('@supabase/supabase-js');
+const { checkAndTrackUsage, getOrganizationByEmail, USAGE_METRICS } = require('./usage-tracker');
 
 const supabase = createClient(
   process.env.VITE_SUPABASE_URL,
@@ -143,7 +144,8 @@ async function handleNFTRewards(event, headers) {
       return await checkNFTEligibility(userId, headers);
     
     case 'mint_nft':
-      return await mintReviewerNFT(userId, organizationId, headers);
+      const { user_email } = JSON.parse(event.body || '{}');
+      return await mintReviewerNFT(userId, organizationId, headers, user_email);
     
     case 'get_collection':
       return await getUserNFTCollection(userId, headers);
@@ -196,7 +198,53 @@ async function checkNFTEligibility(userId, headers) {
   };
 }
 
-async function mintReviewerNFT(userId, organizationId, headers) {
+async function mintReviewerNFT(userId, organizationId, headers, userEmail) {
+  if (!userEmail) {
+    return {
+      statusCode: 400,
+      headers,
+      body: JSON.stringify({ error: 'User email is required for NFT minting' })
+    };
+  }
+
+  console.log(`🪙 NFT Minting requested by: ${userEmail}`);
+  
+  // Get organization for usage tracking
+  const org = await getOrganizationByEmail(userEmail);
+  if (!org) {
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: 'Could not get user organization' })
+    };
+  }
+  
+  // Check and track NFT rewards usage
+  const usageResult = await checkAndTrackUsage(
+    org.id, 
+    USAGE_METRICS.NFT_REWARDS, 
+    1, 
+    'nft_mint'
+  );
+  
+  if (!usageResult.allowed) {
+    return {
+      statusCode: 429,
+      headers,
+      body: JSON.stringify({
+        error: usageResult.error,
+        message: usageResult.message,
+        usage: {
+          current: usageResult.current,
+          limit: usageResult.limit,
+          planId: usageResult.planId,
+          upgradeRequired: usageResult.upgradeRequired
+        },
+        upgrade_message: `Upgrade to higher plan to mint more NFT rewards`
+      })
+    };
+  }
+
   // Simulate NFT minting process
   const eligibility = await checkNFTEligibility(userId, headers);
   const eligibleNFTs = JSON.parse(eligibility.body).eligibleNFTs;
@@ -237,6 +285,8 @@ async function mintReviewerNFT(userId, organizationId, headers) {
   // Award tokens to user
   await awardTokensToUser(userId, nftToMint.reward_tokens);
   
+  console.log(`✅ NFT minted successfully for ${userEmail}: ${nftToMint.name} (${nftToMint.reward_tokens} tokens)`);
+  
   return {
     statusCode: 200,
     headers,
@@ -248,7 +298,15 @@ async function mintReviewerNFT(userId, organizationId, headers) {
         image_url: generateNFTImageURL(nftToMint.tier)
       },
       tokens_awarded: nftToMint.reward_tokens,
-      message: `Congratulations! You've earned the ${nftToMint.name} NFT!`
+      message: `Congratulations! You've earned the ${nftToMint.name} NFT!`,
+      usage_info: {
+        current: usageResult.current,
+        limit: usageResult.limit,
+        remaining: usageResult.remaining,
+        percentage: usageResult.percentage,
+        isNearLimit: usageResult.isNearLimit,
+        planId: usageResult.planId
+      }
     })
   };
 }
