@@ -1,5 +1,6 @@
-// Real AI Features Implementation
+// Real AI Features Implementation with Usage Tracking
 const { createClient } = require('@supabase/supabase-js');
+const { checkAndTrackUsage, getOrganizationByEmail, USAGE_METRICS } = require('./usage-tracker');
 
 const supabase = createClient(
   process.env.VITE_SUPABASE_URL,
@@ -83,28 +84,62 @@ exports.handler = async (event, context) => {
   }
 };
 
-// Real sentiment analysis implementation
+// Real sentiment analysis implementation with usage tracking
 async function analyzeSentiment(event, headers) {
-  const { text, organizationId } = JSON.parse(event.body || '{}');
+  const { text, user_email } = JSON.parse(event.body || '{}');
   
   if (!text) {
     return {
       statusCode: 400,
       headers,
-      body: JSON.stringify({ error: 'Text is required' })
+      body: JSON.stringify({ error: 'Text is required for sentiment analysis' })
+    };
+  }
+
+  if (!user_email) {
+    return {
+      statusCode: 400,
+      headers,
+      body: JSON.stringify({ error: 'User email is required for usage tracking' })
     };
   }
   
-  // Check feature access
-  if (organizationId) {
-    const hasFeature = await checkFeatureAccess(organizationId, 'sentiment_analysis');
-    if (!hasFeature) {
-      return {
-        statusCode: 403,
-        headers,
-        body: JSON.stringify({ error: 'Sentiment analysis requires Advanced plan or higher' })
-      };
-    }
+  console.log(`🧠 AI Sentiment Analysis requested by: ${user_email}`);
+  
+  // Get organization and track usage
+  const org = await getOrganizationByEmail(user_email);
+  if (!org) {
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: 'Could not get user organization' })
+    };
+  }
+  
+  // Check and track AI sentiment analysis usage
+  const usageResult = await checkAndTrackUsage(
+    org.id, 
+    USAGE_METRICS.AI_SENTIMENT, 
+    1, 
+    'sentiment_analysis'
+  );
+  
+  if (!usageResult.allowed) {
+    return {
+      statusCode: 429,
+      headers,
+      body: JSON.stringify({
+        error: usageResult.error,
+        message: usageResult.message,
+        usage: {
+          current: usageResult.current,
+          limit: usageResult.limit,
+          planId: usageResult.planId,
+          upgradeRequired: usageResult.upgradeRequired
+        },
+        upgrade_message: `Upgrade to ${getNextPlan(usageResult.planId)} plan to get more AI sentiment analyses`
+      })
+    };
   }
   
   const textLower = text.toLowerCase();
@@ -148,22 +183,22 @@ async function analyzeSentiment(event, headers) {
   const insights = generateSentimentInsights(sentiment, confidence, topics, positiveScore, negativeScore);
   
   // Store analysis in database
-  if (organizationId) {
-    await supabase
-      .from('sentiment_analyses')
-      .insert({
-        organization_id: organizationId,
-        text_analyzed: text,
-        sentiment,
-        confidence,
-        positive_score: positiveScore,
-        negative_score: negativeScore,
-        neutral_score: neutralScore,
-        topics,
-        insights,
-        created_at: new Date().toISOString()
-      });
-  }
+  await supabase
+    .from('sentiment_analyses')
+    .insert({
+      organization_id: org.id,
+      text_analyzed: text,
+      sentiment,
+      confidence,
+      positive_score: positiveScore,
+      negative_score: negativeScore,
+      neutral_score: neutralScore,
+      topics,
+      insights,
+      created_at: new Date().toISOString()
+    });
+  
+  console.log(`✅ Sentiment analysis completed for ${user_email}: ${sentiment} (${Math.round(confidence * 100)}%)`);
   
   return {
     statusCode: 200,
@@ -178,7 +213,15 @@ async function analyzeSentiment(event, headers) {
         neutral: neutralScore
       },
       topics,
-      insights
+      insights,
+      usage_info: {
+        current: usageResult.current,
+        limit: usageResult.limit,
+        remaining: usageResult.remaining,
+        percentage: usageResult.percentage,
+        isNearLimit: usageResult.isNearLimit,
+        planId: usageResult.planId
+      }
     })
   };
 }
@@ -809,4 +852,11 @@ function generateOverallChurnRecommendations(churnRisks) {
   }
   
   return recommendations;
+}
+
+// Helper function to suggest next plan for upgrades
+function getNextPlan(currentPlan) {
+  const planHierarchy = ['free', 'plus', 'premium', 'advanced', 'enterprise'];
+  const currentIndex = planHierarchy.indexOf(currentPlan);
+  return planHierarchy[currentIndex + 1] || 'enterprise';
 }

@@ -554,6 +554,134 @@ async function getUsage(event, headers) {
   };
 }
 
+// Track usage and enforce limits
+async function trackUsage(event, headers) {
+  const { organizationId, metric, increment = 1, action = '' } = JSON.parse(event.body || '{}');
+  
+  if (!organizationId || !metric) {
+    return {
+      statusCode: 400,
+      headers,
+      body: JSON.stringify({ error: 'organizationId and metric required' })
+    };
+  }
+
+  console.log(`📊 Tracking usage: ${metric} (+${increment}) for org ${organizationId}`);
+  
+  // Get organization's current plan
+  const { data: org, error: orgError } = await supabase
+    .from('organizations')
+    .select('current_plan_id, current_period_start, current_period_end')
+    .eq('id', organizationId)
+    .single();
+    
+  if (orgError) {
+    console.error('Error fetching organization:', orgError);
+    return {
+      statusCode: 404,
+      headers,
+      body: JSON.stringify({ error: 'Organization not found' })
+    };
+  }
+  
+  const planId = org.current_plan_id || 'free';
+  const plan = PLANS[planId];
+  const limit = plan.limits[metric];
+  
+  // Get or create current usage record
+  const now = new Date();
+  const { data: usageRecord, error: usageError } = await supabase
+    .from('usage_tracking')
+    .select('*')
+    .eq('organization_id', organizationId)
+    .eq('metric_name', metric)
+    .gte('period_start', org.current_period_start || now.toISOString())
+    .single();
+  
+  let currentUsage = 0;
+  
+  if (usageRecord) {
+    currentUsage = usageRecord.current_usage;
+  }
+  
+  // Check if adding increment would exceed limit
+  const newUsage = currentUsage + increment;
+  const isLimitExceeded = limit !== Infinity && newUsage > limit;
+  
+  if (isLimitExceeded) {
+    console.warn(`🚫 Usage limit exceeded for ${metric}: ${newUsage}/${limit}`);
+    return {
+      statusCode: 429, // Too Many Requests
+      headers,
+      body: JSON.stringify({
+        success: false,
+        error: 'Usage limit exceeded',
+        metric,
+        current: currentUsage,
+        limit,
+        attempted: newUsage,
+        planId,
+        upgradeRequired: true
+      })
+    };
+  }
+  
+  // Update or insert usage record
+  const { error: upsertError } = await supabase
+    .from('usage_tracking')
+    .upsert({
+      organization_id: organizationId,
+      metric_name: metric,
+      current_usage: newUsage,
+      period_start: org.current_period_start || now.toISOString(),
+      period_end: org.current_period_end || new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString(),
+      updated_at: now.toISOString(),
+      last_action: action
+    }, {
+      onConflict: 'organization_id,metric_name,period_start'
+    });
+  
+  if (upsertError) {
+    console.error('Error updating usage:', upsertError);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: 'Failed to update usage' })
+    };
+  }
+  
+  // Log usage event for analytics
+  await supabase
+    .from('usage_events')
+    .insert({
+      organization_id: organizationId,
+      event_type: metric,
+      event_data: { action, increment },
+      plan_id: planId,
+      created_at: now.toISOString()
+    });
+  
+  const percentage = limit === Infinity ? 0 : Math.round((newUsage / limit) * 100);
+  const isNearLimit = percentage >= 80;
+  
+  console.log(`✅ Usage tracked: ${metric} = ${newUsage}/${limit === Infinity ? '∞' : limit} (${percentage}%)`);
+  
+  return {
+    statusCode: 200,
+    headers,
+    body: JSON.stringify({
+      success: true,
+      metric,
+      current: newUsage,
+      limit,
+      percentage,
+      isNearLimit,
+      planId,
+      remaining: limit === Infinity ? Infinity : limit - newUsage
+    })
+  };
+}
+
 // Unlock specific feature (for add-ons)
 async function unlockFeature(event, headers) {
   const { organizationId, featureId, duration = 30 } = JSON.parse(event.body || '{}');
