@@ -1,15 +1,18 @@
 [build]
   publish = "."
+  command = "npm run build"
   
 [functions]
   directory = "netlify/functions"
+  node_bundler = "esbuild"
+  external_node_modules = ["web3", "crypto", "axios", "winston", "opossum"]
 
 [functions."sherlock-search"]
   runtime = "python3.8"
 
 [build.environment]
-  # Build-time variables
   NODE_VERSION = "18"
+  NPM_FLAGS = "--production"
 
 # Environment variables are configured in Netlify Dashboard
 # Site Settings > Environment Variables:
@@ -24,7 +27,7 @@
     X-XSS-Protection = "1; mode=block"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; connect-src 'self' https://zsionhetkwaslvounaqo.supabase.co; img-src 'self' data:; font-src 'self'"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; connect-src 'self' https://zsionhetkwaslvounaqo.supabase.co https://api.coingecko.com https://api.etherscan.io https://api.bscscan.com https://api.polygonscan.com https://api.snowtrace.io https://api.arbiscan.io https://mainnet.infura.io https://bsc-dataseed1.binance.org https://polygon-rpc.com https://api.avax.network; img-src 'self' data:; font-src 'self'"
 
 # PWA caching
 [[headers]]

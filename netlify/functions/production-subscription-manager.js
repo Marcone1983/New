@@ -1,7 +1,8 @@
-// PRODUCTION-READY SUBSCRIPTION MANAGER
-// Real enterprise-grade features with vital business value
+// PRODUCTION-READY CRYPTO SUBSCRIPTION MANAGER
+// Real enterprise-grade features with crypto payments
 const { createClient } = require('@supabase/supabase-js');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const Web3 = require('web3');
+const axios = require('axios');
 const nodemailer = require('nodemailer');
 const twilio = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
