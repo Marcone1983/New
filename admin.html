@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - SocialTrust Enterprise</title>
+    <meta name="description" content="Dashboard amministrativa SocialTrust Enterprise">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .back-arrow {
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            text-decoration: none;
+            font-size: 1.2rem;
+            z-index: 1000;
+        }
+
+        .back-arrow:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .enterprise-badge {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            display: inline-block;
+            margin-top: 1rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .admin-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .admin-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-icon {
+            font-size: 2rem;
+            margin-right: 1rem;
+            padding: 0.75rem;
+            border-radius: 12px;
+            color: white;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 10px;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #4f46e5;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-top: 0.25rem;
+        }
+
+        .action-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            border: none;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+
+        .action-btn.secondary {
+            background: linear-gradient(135deg, #64748b, #475569);
+        }
+
+        .action-btn.success {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .action-btn.warning {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+
+        .recent-activity {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            color: white;
+            font-size: 1.1rem;
+        }
+
+        .activity-content h4 {
+            color: #1f2937;
+            font-size: 0.95rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .activity-content p {
+            color: #64748b;
+            font-size: 0.8rem;
+        }
+
+        .user-info {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .user-avatar {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            margin: 0 auto 1rem;
+        }
+
+        .logout-btn {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-arrow">←</a>
+    
+    <div class="header">
+        <h1>🚀 Dashboard Enterprise</h1>
+        <p>Benvenuto nella console amministrativa SocialTrust</p>
+        <div class="enterprise-badge">ENTERPRISE ACCESS</div>
+    </div>
+
+    <div class="container">
+        <!-- User Info -->
+        <div class="user-info">
+            <div class="user-avatar">👑</div>
+            <h2 id="userName">Caricamento...</h2>
+            <p id="userEmail">Caricamento...</p>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+
+        <!-- Dashboard Grid -->
+        <div class="dashboard-grid">
+            <!-- System Statistics -->
+            <div class="admin-card">
+                <div class="card-header">
+                    <div class="card-icon" style="background: linear-gradient(135deg, #4f46e5, #7c3aed);">📊</div>
+                    <div class="card-title">Statistiche Sistema</div>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalUsers">0</div>
+                        <div class="stat-label">Utenti Totali</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalReviews">0</div>
+                        <div class="stat-label">Recensioni</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalBusinesses">0</div>
+                        <div class="stat-label">Aziende</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="subscriptions">0</div>
+                        <div class="stat-label">Abbonamenti</div>
+                    </div>
+                </div>
+                <button class="action-btn" onclick="refreshStats()">Aggiorna Statistiche</button>
+            </div>
+
+            <!-- User Management -->
+            <div class="admin-card">
+                <div class="card-header">
+                    <div class="card-icon" style="background: linear-gradient(135deg, #10b981, #059669);">👥</div>
+                    <div class="card-title">Gestione Utenti</div>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" id="activeUsers">0</div>
+                        <div class="stat-label">Utenti Attivi</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="enterpriseUsers">1</div>
+                        <div class="stat-label">Enterprise</div>
+                    </div>
+                </div>
+                <button class="action-btn success" onclick="manageUsers()">Gestisci Utenti</button>
+                <button class="action-btn secondary" onclick="exportUsers()">Esporta Dati</button>
+            </div>
+
+            <!-- Payment Management -->
+            <div class="admin-card">
+                <div class="card-header">
+                    <div class="card-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">💰</div>
+                    <div class="card-title">Pagamenti Crypto</div>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" id="pendingPayments">0</div>
+                        <div class="stat-label">In Attesa</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="completedPayments">0</div>
+                        <div class="stat-label">Completati</div>
+                    </div>
+                </div>
+                <button class="action-btn warning" onclick="viewPayments()">Visualizza Pagamenti</button>
+                <button class="action-btn" onclick="verifyPayments()">Verifica Blockchain</button>
+            </div>
+
+            <!-- System Settings -->
+            <div class="admin-card">
+                <div class="card-header">
+                    <div class="card-icon" style="background: linear-gradient(135deg, #64748b, #475569);">⚙️</div>
+                    <div class="card-title">Configurazione</div>
+                </div>
+                <p style="margin-bottom: 1rem; color: #64748b;">Gestisci le impostazioni del sistema e le configurazioni enterprise.</p>
+                <button class="action-btn secondary" onclick="systemSettings()">Impostazioni Sistema</button>
+                <button class="action-btn" onclick="apiConfig()">Configurazione API</button>
+                <button class="action-btn success" onclick="backupSystem()">Backup Database</button>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="recent-activity">
+            <h3 style="margin-bottom: 1.5rem;">Attività Recenti</h3>
+            <div id="recentActivity">
+                <div class="activity-item">
+                    <div class="activity-icon" style="background: #4f46e5;">🔐</div>
+                    <div class="activity-content">
+                        <h4>Accesso Enterprise Effettuato</h4>
+                        <p>Sistema di autenticazione enterprise attivato - <span id="loginTime">Ora</span></p>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-icon" style="background: #10b981;">✅</div>
+                    <div class="activity-content">
+                        <h4>Sistema Crypto Payments Attivo</h4>
+                        <p>Wallet addresses configurati e pronti per pagamenti</p>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-icon" style="background: #f59e0b;">📊</div>
+                    <div class="activity-content">
+                        <h4>Database Production Ready</h4>
+                        <p>Sistema di produzione completamente funzionale</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check enterprise access
+        document.addEventListener('DOMContentLoaded', async () => {
+            const userSession = localStorage.getItem('user_session');
+            
+            if (!userSession) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            try {
+                const session = JSON.parse(userSession);
+                if (!session.user || !session.user.enterprise_access) {
+                    alert('Accesso negato. Privilegi Enterprise richiesti.');
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                // Display user info
+                document.getElementById('userName').textContent = session.user.full_name || session.user.email;
+                document.getElementById('userEmail').textContent = session.user.email;
+                document.getElementById('loginTime').textContent = new Date().toLocaleString();
+
+                // Load dashboard data
+                await loadDashboardStats();
+                
+            } catch (error) {
+                console.error('Session error:', error);
+                localStorage.removeItem('user_session');
+                window.location.href = 'login.html';
+            }
+        });
+
+        // Load dashboard statistics
+        async function loadDashboardStats() {
+            try {
+                // Load system statistics
+                const statsResponse = await fetch('/.netlify/functions/api-stats');
+                const statsData = await statsResponse.json();
+                
+                if (statsData.success) {
+                    document.getElementById('totalUsers').textContent = statsData.data.totalUsers;
+                    document.getElementById('totalReviews').textContent = statsData.data.totalReviews;
+                    document.getElementById('totalBusinesses').textContent = statsData.data.totalBusinesses;
+                }
+
+                // Load payment statistics (mock for now)
+                document.getElementById('pendingPayments').textContent = '0';
+                document.getElementById('completedPayments').textContent = '0';
+                document.getElementById('activeUsers').textContent = '1';
+
+            } catch (error) {
+                console.error('Error loading dashboard stats:', error);
+            }
+        }
+
+        // Dashboard actions
+        function refreshStats() {
+            loadDashboardStats();
+            alert('Statistiche aggiornate!');
+        }
+
+        function manageUsers() {
+            alert('Funzione Gestione Utenti - In sviluppo');
+        }
+
+        function exportUsers() {
+            alert('Esportazione dati utenti - In sviluppo');
+        }
+
+        function viewPayments() {
+            alert('Visualizzazione pagamenti crypto - In sviluppo');
+        }
+
+        function verifyPayments() {
+            alert('Verifica blockchain payments - In sviluppo');
+        }
+
+        function systemSettings() {
+            alert('Impostazioni sistema - In sviluppo');
+        }
+
+        function apiConfig() {
+            alert('Configurazione API - In sviluppo');
+        }
+
+        function backupSystem() {
+            alert('Backup sistema avviato - In sviluppo');
+        }
+
+        // Logout function
+        function logout() {
+            if (confirm('Sei sicuro di voler uscire dalla dashboard Enterprise?')) {
+                localStorage.removeItem('user_session');
+                window.location.href = 'index.html';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -58,7 +58,7 @@ class BusinessSearch {
   // Search directly in Supabase database
   async searchInDatabase(query, platform = 'all') {
     try {
-      let queryBuilder = supabaseClient
+      let queryBuilder = supabase
         .from('businesses')
         .select('*')
         .ilike('name', `%${query}%`);
@@ -155,7 +155,7 @@ class BusinessSearch {
           description: `Found via OSINT search - confidence: ${result.confidence}`
         };
 
-        const { error } = await supabaseClient
+        const { error } = await supabase
           .from('businesses')
           .upsert([businessData], { 
             onConflict: 'name,platform',
@@ -344,7 +344,7 @@ class BusinessSearch {
   // Get trending from database
   async getDBTrendingBusinesses(platform, limit) {
     try {
-      const { data: trendingData, error } = await supabaseClient
+      const { data: trendingData, error } = await supabase
         .from('reviews')
         .select(`
           business_id,

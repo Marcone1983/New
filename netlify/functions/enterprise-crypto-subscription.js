@@ -250,6 +250,75 @@ async function getBusinessWallets(body, headers) {
   }
 }
 
+// GET BUSINESS WALLETS FOR PAYMENT DISPLAY
+async function getBusinessWallets(body, headers) {
+  try {
+    const { network, crypto_currency } = body;
+    
+    // If specific network requested, return only that network
+    if (network && YOUR_BUSINESS_WALLETS[network]) {
+      const wallet = YOUR_BUSINESS_WALLETS[network];
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({
+          success: true,
+          wallet: {
+            network: wallet.network,
+            address: wallet.address,
+            chain_id: wallet.chain_id,
+            explorer: wallet.explorer,
+            confirmations_required: wallet.confirmations_required
+          }
+        })
+      };
+    }
+    
+    // Return all wallets with currency support info
+    const walletsWithCurrencies = {};
+    
+    for (const [networkKey, wallet] of Object.entries(YOUR_BUSINESS_WALLETS)) {
+      walletsWithCurrencies[networkKey] = {
+        ...wallet,
+        supported_currencies: getSupportedCurrencies(networkKey)
+      };
+    }
+    
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        success: true,
+        wallets: walletsWithCurrencies,
+        supported_networks: Object.keys(YOUR_BUSINESS_WALLETS),
+        message: 'Business crypto wallets ready for payment'
+      })
+    };
+
+  } catch (error) {
+    console.error('Get business wallets error:', error);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: 'Failed to get wallet addresses' })
+    };
+  }
+}
+
+// Get supported currencies for each network
+function getSupportedCurrencies(network) {
+  switch (network) {
+    case 'ethereum':
+      return ['ETH', 'USDT', 'USDC'];
+    case 'bsc':
+      return ['BNB', 'USDT', 'USDC'];
+    case 'polygon':
+      return ['POL', 'USDT', 'USDC'];
+    default:
+      return [];
+  }
+}
+
 // CREATE PAYMENT INVOICE
 async function createPaymentInvoice(body, headers) {
   try {
