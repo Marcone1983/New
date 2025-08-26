@@ -50,6 +50,12 @@ exports.handler = async (event, context) => {
         
       case 'check_enterprise_access':
         return await checkEnterpriseAccess(body, headers);
+        
+      case 'check_session':
+        return await checkSession(body, headers);
+        
+      case 'logout':
+        return await logoutUser(body, headers);
 
       default:
         return {
@@ -411,6 +417,102 @@ async function checkEnterpriseAccess(body, headers) {
       statusCode: 500,
       headers,
       body: JSON.stringify({ error: 'Access check failed' })
+    };
+  }
+}
+
+// CHECK SESSION VALIDITY
+async function checkSession(body, headers) {
+  try {
+    const { session_token } = body;
+
+    if (!session_token) {
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ error: 'Session token required' })
+      };
+    }
+
+    // Get user from session token
+    const { data: session, error: sessionError } = await supabase.auth.getUser(session_token);
+    
+    if (sessionError || !session.user) {
+      return {
+        statusCode: 401,
+        headers,
+        body: JSON.stringify({ success: false, error: 'Invalid session' })
+      };
+    }
+
+    // Get user profile from database
+    const { data: profile, error: profileError } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('user_id', session.user.id)
+      .single();
+
+    if (profileError) {
+      console.error('Profile fetch error:', profileError);
+    }
+
+    const userData = {
+      id: session.user.id,
+      email: session.user.email,
+      name: profile?.full_name || session.user.user_metadata?.full_name,
+      plan: profile?.subscription_plan || 'free',
+      company: profile?.company_name,
+      enterprise_access: ENTERPRISE_USERS.includes(session.user.email.toLowerCase())
+    };
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        success: true,
+        user: userData,
+        session_token: session_token
+      })
+    };
+
+  } catch (error) {
+    console.error('Session check error:', error);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ success: false, error: 'Session check failed' })
+    };
+  }
+}
+
+// LOGOUT USER
+async function logoutUser(body, headers) {
+  try {
+    const { session_token } = body;
+
+    if (session_token) {
+      // Invalidate session in Supabase
+      await supabase.auth.admin.signOut(session_token);
+    }
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        success: true,
+        message: 'Logout successful'
+      })
+    };
+
+  } catch (error) {
+    console.error('Logout error:', error);
+    return {
+      statusCode: 200, // Return success even if logout fails
+      headers,
+      body: JSON.stringify({
+        success: true,
+        message: 'Logout completed'
+      })
     };
   }
 }

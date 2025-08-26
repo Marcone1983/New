@@ -599,22 +599,72 @@
                 </div>
                 <!-- User section: login/logout -->
                 <div id="userSection">
-                    <!-- content injected by JS -->
+                    <div id="loginSection" style="display: flex; gap: 0.5rem; align-items: center;">
+                        <button onclick="location.href='login.html'" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer; font-size: 0.9rem;">
+                            🔑 Login
+                        </button>
+                        <button onclick="location.href='register.html'" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer; font-size: 0.9rem; font-weight: 500;">
+                            ✨ Registrati
+                        </button>
+                    </div>
+                    <div id="loggedInSection" style="display: none; gap: 0.5rem; align-items: center;">
+                        <span id="userName" style="color: white; font-weight: 500;"></span>
+                        <button onclick="location.href='admin.html'" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer; font-size: 0.9rem;">
+                            ⚡ Dashboard
+                        </button>
+                        <button onclick="logout()" style="background: rgba(220,38,38,0.2); color: white; border: 1px solid rgba(220,38,38,0.3); padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer; font-size: 0.9rem;">
+                            🚪 Logout
+                        </button>
+                    </div>
                 </div>
             </div>
         </header>
         
-        <!-- Enterprise CTA Section -->
-        <div style="background: linear-gradient(135deg, #667eea, #764ba2); padding: 2rem 1rem; text-align: center; color: white;">
-            <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">🚀 Sblocca il Potenziale Enterprise</h2>
-            <p style="margin-bottom: 1.5rem; opacity: 0.95;">Dashboard avanzata, AI features, pagamenti crypto e molto altro!</p>
-            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-                <a href="/app.html" style="background: white; color: #4f46e5; padding: 0.75rem 1.5rem; border-radius: 0.5rem; text-decoration: none; font-weight: bold; display: inline-block;">
-                    📊 Dashboard Enterprise
-                </a>
-                <a href="/crypto-pricing.html" style="background: linear-gradient(135deg, #f59e0b, #f97316); color: white; padding: 0.75rem 1.5rem; border-radius: 0.5rem; text-decoration: none; font-weight: bold; display: inline-block;">
-                    💎 Piani Crypto
-                </a>
+        <!-- Enterprise Features Section -->
+        <div style="background: linear-gradient(135deg, #667eea, #764ba2); padding: 2rem 1rem; color: white;">
+            <div style="max-width: 768px; margin: 0 auto;">
+                <div style="text-align: center; margin-bottom: 2rem;">
+                    <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">🚀 SocialTrust Enterprise Suite</h2>
+                    <p style="margin-bottom: 0; opacity: 0.95;">Piattaforma completa con AI, Analytics, Automazione e Compliance</p>
+                </div>
+                
+                <!-- Main CTA Buttons -->
+                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 2rem;">
+                    <a href="admin.html" style="background: white; color: #4f46e5; padding: 0.75rem 1.5rem; border-radius: 0.5rem; text-decoration: none; font-weight: bold; display: inline-block;">
+                        ⚡ Dashboard Enterprise
+                    </a>
+                    <a href="crypto-pricing.html" style="background: linear-gradient(135deg, #f59e0b, #f97316); color: white; padding: 0.75rem 1.5rem; border-radius: 0.5rem; text-decoration: none; font-weight: bold; display: inline-block;">
+                        💎 Piani & Prezzi
+                    </a>
+                </div>
+
+                <!-- Features Grid -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 1.5rem;">
+                    <div style="background: rgba(255,255,255,0.1); border-radius: 0.75rem; padding: 1rem; backdrop-filter: blur(10px);">
+                        <div style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem;">🤖 AI Features</div>
+                        <div style="font-size: 0.9rem; opacity: 0.9; line-height: 1.4;">Auto-Response, Sentiment Analysis, Predictive Forecasting</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.1); border-radius: 0.75rem; padding: 1rem; backdrop-filter: blur(10px);">
+                        <div style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem;">📊 Advanced Analytics</div>
+                        <div style="font-size: 0.9rem; opacity: 0.9; line-height: 1.4;">OLAP Engine, Real-time Insights, Custom Reports</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.1); border-radius: 0.75rem; padding: 1rem; backdrop-filter: blur(10px);">
+                        <div style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem;">⚙️ Marketing Automation</div>
+                        <div style="font-size: 0.9rem; opacity: 0.9; line-height: 1.4;">Workflow Engine, Auto-Invites, Campaign Management</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.1); border-radius: 0.75rem; padding: 1rem; backdrop-filter: blur(10px);">
+                        <div style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem;">🔒 SOC2 Compliance</div>
+                        <div style="font-size: 0.9rem; opacity: 0.9; line-height: 1.4;">Security Framework, Audit Trails, Certifications</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.1); border-radius: 0.75rem; padding: 1rem; backdrop-filter: blur(10px);">
+                        <div style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem;">🌐 Unlimited API</div>
+                        <div style="font-size: 0.9rem; opacity: 0.9; line-height: 1.4;">Enterprise Gateway, Multi-language SDKs, Analytics</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.1); border-radius: 0.75rem; padding: 1rem; backdrop-filter: blur(10px);">
+                        <div style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem;">💎 Crypto Payments</div>
+                        <div style="font-size: 0.9rem; opacity: 0.9; line-height: 1.4;">Multi-blockchain, Real-time Verification, Automated</div>
+                    </div>
+                </div>
             </div>
         </div>
         
@@ -697,10 +747,13 @@
         <footer class="footer">
             <div class="footer-content">
                 <div class="footer-links">
+                    <a href="login.html">Login</a>
+                    <a href="register.html">Registrati</a>
+                    <a href="admin.html">Dashboard</a>
+                    <a href="crypto-pricing.html">Piani & Prezzi</a>
                     <a href="privacy.html">Privacy Policy</a>
                     <a href="terms.html">Terms of Service</a>
                     <a href="mailto:help@socialtrust.com">Contatti</a>
-                    <a href="mailto:abuse@socialtrust.com">Segnalazioni</a>
                 </div>
                 <div class="footer-bottom">
                     <p>&copy; 2025 SocialTrust. Piattaforma professionale per la valutazione di aziende sui social media.</p>
@@ -1191,6 +1244,117 @@
             document.getElementById('search').value = '';
             searchQuery = '';
         }
+
+        // Authentication System Integration
+        let currentUser = null;
+
+        // Check authentication status on page load
+        async function checkAuthStatus() {
+            try {
+                // Try to get user from session storage
+                const storedUser = sessionStorage.getItem('socialtrust_user');
+                if (storedUser) {
+                    currentUser = JSON.parse(storedUser);
+                    updateUserInterface();
+                }
+
+                // Also check with backend if user session is still valid
+                const response = await fetch('/.netlify/functions/auth-system', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        action: 'check_session',
+                        session_token: sessionStorage.getItem('auth_token')
+                    })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success && result.user) {
+                        currentUser = result.user;
+                        sessionStorage.setItem('socialtrust_user', JSON.stringify(currentUser));
+                        sessionStorage.setItem('auth_token', result.session_token);
+                        updateUserInterface();
+                    } else if (!storedUser) {
+                        // No valid session, show login buttons
+                        showLoginInterface();
+                    }
+                } else if (!storedUser) {
+                    showLoginInterface();
+                }
+            } catch (error) {
+                console.log('Auth check failed:', error);
+                showLoginInterface();
+            }
+        }
+
+        // Update UI based on authentication status
+        function updateUserInterface() {
+            const loginSection = document.getElementById('loginSection');
+            const loggedInSection = document.getElementById('loggedInSection');
+            const userName = document.getElementById('userName');
+
+            if (currentUser) {
+                loginSection.style.display = 'none';
+                loggedInSection.style.display = 'flex';
+                userName.textContent = currentUser.email || currentUser.name;
+                
+                // Show enterprise features if user has access
+                if (currentUser.plan === 'enterprise' || currentUser.plan === 'advanced') {
+                    showEnterpriseFeatures();
+                }
+            } else {
+                showLoginInterface();
+            }
+        }
+
+        // Show login interface
+        function showLoginInterface() {
+            const loginSection = document.getElementById('loginSection');
+            const loggedInSection = document.getElementById('loggedInSection');
+            
+            loginSection.style.display = 'flex';
+            loggedInSection.style.display = 'none';
+        }
+
+        // Show enterprise features for authenticated users
+        function showEnterpriseFeatures() {
+            // Add enterprise-specific UI elements or highlight features
+            console.log('🚀 Enterprise features available for:', currentUser.email);
+        }
+
+        // Logout function
+        async function logout() {
+            try {
+                // Call backend logout
+                await fetch('/.netlify/functions/auth-system', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        action: 'logout',
+                        session_token: sessionStorage.getItem('auth_token')
+                    })
+                });
+            } catch (error) {
+                console.log('Logout request failed:', error);
+            }
+
+            // Clear local storage
+            currentUser = null;
+            sessionStorage.removeItem('socialtrust_user');
+            sessionStorage.removeItem('auth_token');
+            
+            // Update UI
+            showLoginInterface();
+            
+            // Show confirmation
+            showToast('Logout effettuato con successo');
+        }
+
+        // Initialize authentication check when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuthStatus();
+        });
     </script>
 </body>
 </html>
