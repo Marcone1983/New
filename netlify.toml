@@ -5,7 +5,7 @@
 [functions]
   directory = "netlify/functions"
   node_bundler = "esbuild"
-  external_node_modules = ["web3", "crypto", "axios", "winston", "opossum"]
+  external_node_modules = ["web3", "crypto", "axios", "winston", "opossum", "openai", "helmet", "express-slow-down", "xss", "express-validator", "nodemailer", "twilio", "@supabase/supabase-js"]
 
 [functions."sherlock-search"]
   runtime = "python3.8"
