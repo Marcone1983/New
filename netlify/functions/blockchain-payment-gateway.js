@@ -87,11 +87,10 @@ const BUSINESS_CRYPTO_WALLETS = {
 // SUPPORTED CRYPTOCURRENCIES WITH NETWORKS
 const SUPPORTED_CRYPTOCURRENCIES = {
   ETH: { networks: ['ethereum'], decimals: 18 },
-  BNB: { networks: ['bsc'], decimals: 18 },
-  MATIC: { networks: ['polygon'], decimals: 18 },
   USDT: { networks: ['ethereum', 'bsc', 'polygon'], decimals: 6 },
-  USDC: { networks: ['ethereum', 'polygon'], decimals: 6 },
-  BTC: { networks: [], decimals: 8 } // Bitcoin requires separate handling
+  USDC: { networks: ['ethereum', 'bsc', 'polygon'], decimals: 6 },
+  BNB: { networks: ['bsc'], decimals: 18 },
+  POL: { networks: ['polygon'], decimals: 18 }
 };
 
 exports.handler = async (event, context) => {

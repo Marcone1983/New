@@ -56,12 +56,11 @@ const ENTERPRISE_CRYPTO_PLANS = {
       api_calls_monthly: 1000
     },
     crypto_prices: {
-      ETH: '0.0272',    // Dynamic pricing based on current rates
-      BNB: '0.245',     // Updated every hour
-      MATIC: '65.33',   // Real-time market rates
-      USDT: '49.00',    // Stablecoin fixed
-      USDC: '49.00',    // Stablecoin fixed
-      BTC: '0.00108'    // Bitcoin option
+      ETH: '0.0272',    // Ethereum network
+      USDT: '49.00',    // Ethereum/BSC/Polygon networks
+      USDC: '49.00',    // Ethereum/BSC/Polygon networks  
+      BNB: '0.245',     // BSC network
+      POL: '65.33'      // Polygon network
     }
   },
   premium: {
@@ -86,12 +85,11 @@ const ENTERPRISE_CRYPTO_PLANS = {
       competitors_tracked: 10
     },
     crypto_prices: {
-      ETH: '0.0828',    
-      BNB: '0.745',     
-      MATIC: '198.67',  
-      USDT: '149.00',   
-      USDC: '149.00',   
-      BTC: '0.00329'    
+      ETH: '0.0828',    // Ethereum network
+      USDT: '149.00',   // Ethereum/BSC/Polygon networks
+      USDC: '149.00',   // Ethereum/BSC/Polygon networks
+      BNB: '0.745',     // BSC network  
+      POL: '198.67'     // Polygon network
     }
   },
   advanced: {
@@ -117,12 +115,11 @@ const ENTERPRISE_CRYPTO_PLANS = {
       competitors_tracked: -1         // Unlimited
     },
     crypto_prices: {
-      ETH: '0.2217',    
-      BNB: '1.995',     
-      MATIC: '532.00',  
-      USDT: '399.00',   
-      USDC: '399.00',   
-      BTC: '0.00881'    
+      ETH: '0.2217',    // Ethereum network
+      USDT: '399.00',   // Ethereum/BSC/Polygon networks
+      USDC: '399.00',   // Ethereum/BSC/Polygon networks
+      BNB: '1.995',     // BSC network
+      POL: '532.00'     // Polygon network
     }
   }
 };
