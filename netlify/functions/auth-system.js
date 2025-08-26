@@ -3,10 +3,14 @@
 const { createClient } = require('@supabase/supabase-js');
 const crypto = require('crypto');
 
-const supabase = createClient(
-  process.env.VITE_SUPABASE_URL,
-  process.env.VITE_SUPABASE_ANON_KEY
-);
+// Supabase configuration with fallback
+const SUPABASE_URL = process.env.VITE_SUPABASE_URL || 'https://zsionhetkwaslvounaqo.supabase.co';
+const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpzaW9uaGV0a3dhc2x2b3VuYXFvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYwNTgwNTUsImV4cCI6MjA3MTYzNDA1NX0.5DVKWx1-r3lkuUo7UVVnorTSq_HTZz3Gr6J6jbDJ5ig';
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Debug logging
+console.log('Supabase initialized with URL:', SUPABASE_URL?.substring(0, 30) + '...');
 
 // Enterprise users with special privileges
 const ENTERPRISE_USERS = [
@@ -78,13 +82,17 @@ exports.handler = async (event, context) => {
 // REGISTER NEW USER
 async function registerUser(body, headers) {
   try {
+    console.log('Registration attempt:', { email: body.email, hasPassword: !!body.password });
+    
     const { email, password, full_name, company_name } = body;
 
     if (!email || !password || !full_name) {
+      console.log('Missing required fields');
       return {
         statusCode: 400,
         headers,
         body: JSON.stringify({ 
+          success: false,
           error: 'Missing required fields: email, password, full_name' 
         })
       };
@@ -92,15 +100,19 @@ async function registerUser(body, headers) {
 
     // Password validation
     if (password.length < 8) {
+      console.log('Password too short');
       return {
         statusCode: 400,
         headers,
         body: JSON.stringify({ 
+          success: false,
           error: 'Password must be at least 8 characters long' 
         })
       };
     }
 
+    console.log('Attempting Supabase signUp...');
+    
     // Register with Supabase Auth
     const { data, error } = await supabase.auth.signUp({
       email: email.toLowerCase().trim(),
@@ -114,34 +126,58 @@ async function registerUser(body, headers) {
       }
     });
 
+    console.log('Supabase signUp result:', { 
+      hasData: !!data, 
+      hasUser: !!data?.user, 
+      hasError: !!error,
+      errorMessage: error?.message 
+    });
+
     if (error) {
+      console.error('Supabase signup error:', error);
       return {
         statusCode: 400,
         headers,
-        body: JSON.stringify({ error: error.message })
+        body: JSON.stringify({ 
+          success: false,
+          error: error.message 
+        })
       };
     }
 
     // Check if user gets enterprise privileges
     const isEnterpriseUser = ENTERPRISE_USERS.includes(email.toLowerCase());
+    console.log('User enterprise status:', { email: email.toLowerCase(), isEnterprise: isEnterpriseUser });
     
-    // Create user profile in our database
-    const { error: profileError } = await supabase
-      .from('user_profiles')
-      .insert({
-        user_id: data.user.id,
-        email: email.toLowerCase(),
-        full_name: full_name.trim(),
-        company_name: company_name?.trim() || null,
-        subscription_plan: isEnterpriseUser ? 'advanced' : 'free',
-        enterprise_access: isEnterpriseUser,
-        created_at: new Date().toISOString()
-      });
+    // Try to create user profile in our database
+    try {
+      console.log('Creating user profile...');
+      const { error: profileError } = await supabase
+        .from('user_profiles')
+        .insert({
+          user_id: data.user.id,
+          email: email.toLowerCase(),
+          full_name: full_name.trim(),
+          company_name: company_name?.trim() || null,
+          subscription_plan: isEnterpriseUser ? 'advanced' : 'free',
+          enterprise_access: isEnterpriseUser,
+          created_at: new Date().toISOString()
+        });
 
-    if (profileError) {
-      console.error('Profile creation error:', profileError);
+      if (profileError) {
+        console.error('Profile creation error:', profileError);
+        // Don't fail the registration if profile creation fails
+        console.log('Continuing despite profile error...');
+      } else {
+        console.log('User profile created successfully');
+      }
+    } catch (profileException) {
+      console.error('Profile creation exception:', profileException);
+      // Don't fail the registration
     }
 
+    console.log('Registration successful, returning response');
+    
     return {
       statusCode: 200,
       headers,
@@ -162,7 +198,10 @@ async function registerUser(body, headers) {
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ error: 'Registration failed' })
+      body: JSON.stringify({ 
+        success: false,
+        error: 'Registration failed: ' + error.message 
+      })
     };
   }
 }
