@@ -3,14 +3,17 @@
 const { createClient } = require('@supabase/supabase-js');
 const crypto = require('crypto');
 
-// Supabase configuration with fallback
-const SUPABASE_URL = process.env.VITE_SUPABASE_URL || 'https://zsionhetkwaslvounaqo.supabase.co';
-const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpzaW9uaGV0a3dhc2x2b3VuYXFvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYwNTgwNTUsImV4cCI6MjA3MTYzNDA1NX0.5DVKWx1-r3lkuUo7UVVnorTSq_HTZz3Gr6J6jbDJ5ig';
+// Supabase configuration - REQUIRES PROPER ENVIRONMENT VARIABLES
+if (!process.env.VITE_SUPABASE_URL || !process.env.VITE_SUPABASE_ANON_KEY) {
+  throw new Error('CONFIGURATION ERROR: Missing Supabase environment variables. Configure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in Netlify.');
+}
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabase = createClient(
+  process.env.VITE_SUPABASE_URL,
+  process.env.VITE_SUPABASE_ANON_KEY
+);
 
-// Debug logging
-console.log('Supabase initialized with URL:', SUPABASE_URL?.substring(0, 30) + '...');
+console.log('✅ Supabase properly configured');
 
 // Enterprise users with special privileges
 const ENTERPRISE_USERS = [
@@ -149,32 +152,35 @@ async function registerUser(body, headers) {
     const isEnterpriseUser = ENTERPRISE_USERS.includes(email.toLowerCase());
     console.log('User enterprise status:', { email: email.toLowerCase(), isEnterprise: isEnterpriseUser });
     
-    // Try to create user profile in our database
-    try {
-      console.log('Creating user profile...');
-      const { error: profileError } = await supabase
-        .from('user_profiles')
-        .insert({
-          user_id: data.user.id,
-          email: email.toLowerCase(),
-          full_name: full_name.trim(),
-          company_name: company_name?.trim() || null,
-          subscription_plan: isEnterpriseUser ? 'advanced' : 'free',
-          enterprise_access: isEnterpriseUser,
-          created_at: new Date().toISOString()
-        });
+    // Create user profile in database - MUST SUCCEED
+    console.log('Creating user profile...');
+    const { error: profileError } = await supabase
+      .from('user_profiles')
+      .insert({
+        user_id: data.user.id,
+        email: email.toLowerCase(),
+        full_name: full_name.trim(),
+        company_name: company_name?.trim() || null,
+        subscription_plan: isEnterpriseUser ? 'advanced' : 'free',
+        enterprise_access: isEnterpriseUser,
+        created_at: new Date().toISOString()
+      });
 
-      if (profileError) {
-        console.error('Profile creation error:', profileError);
-        // Don't fail the registration if profile creation fails
-        console.log('Continuing despite profile error...');
-      } else {
-        console.log('User profile created successfully');
-      }
-    } catch (profileException) {
-      console.error('Profile creation exception:', profileException);
-      // Don't fail the registration
+    if (profileError) {
+      console.error('❌ DATABASE ERROR - user_profiles table missing or misconfigured:', profileError);
+      console.error('🔧 SOLUTION: Run database-migrations/003_auth_system.sql in Supabase SQL Editor');
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({ 
+          success: false,
+          error: 'Database not configured. Run the database migration first.',
+          technical_error: profileError.message
+        })
+      };
     }
+    
+    console.log('✅ User profile created successfully');
 
     console.log('Registration successful, returning response');
     
