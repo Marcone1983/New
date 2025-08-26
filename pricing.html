@@ -326,14 +326,43 @@
             return div;
         }
 
-        // Get features list HTML
+        // Get features list HTML - ONLY REAL IMPLEMENTED FEATURES
         function getFeaturesList(plan) {
-            const features = [
-                `${plan.limits?.reviewInvitesPerMonth === null ? 'Inviti illimitati' : plan.limits?.reviewInvitesPerMonth + ' inviti/mese'}`,
-                `${plan.limits?.teamMembers === null ? 'Team illimitato' : plan.limits?.teamMembers + ' membri team'}`,
-                `${plan.limits?.apiRequestsPerMonth === null ? 'API illimitate' : plan.limits?.apiRequestsPerMonth + ' API calls/mese'}`,
-                `Supporto ${plan.limits?.supportLevel === 'community' ? 'community' : plan.limits?.supportLevel}`
-            ];
+            let features = [];
+            
+            // Base features for all plans
+            features.push('📝 Raccolta Recensioni');
+            features.push('👤 Profilo Base');
+            
+            // Plan-specific REAL features only
+            switch(plan.id) {
+                case 'free':
+                    features.push('💬 Risposta alle Recensioni');
+                    features.push('📊 Statistiche Base');
+                    break;
+                case 'plus':
+                    features.push('💬 Risposta alle Recensioni');
+                    features.push('🚀 200 Inviti/mese');
+                    features.push('🎨 Profilo Personalizzato');
+                    features.push('📊 Analytics Base');
+                    break;
+                case 'premium':
+                    features.push('💬 Risposta alle Recensioni');
+                    features.push('🚀 500 Inviti/mese');
+                    features.push('🎨 Profilo Personalizzato');
+                    features.push('📊 Analytics Avanzate');
+                    features.push('👥 10 Membri Team');
+                    break;
+                case 'advanced':
+                    features.push('💬 Risposta alle Recensioni');
+                    features.push('🚀 2,500 Inviti/mese');
+                    features.push('🎨 Profilo Personalizzato');
+                    features.push('📊 Analytics Avanzate');
+                    features.push('👥 50 Membri Team');
+                    features.push('🔑 Accesso API');
+                    features.push('🛡️ Supporto Dedicato');
+                    break;
+            }
 
             return features.map(f => `<li>${f}</li>`).join('');
         }

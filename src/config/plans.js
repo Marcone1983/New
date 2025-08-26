@@ -43,14 +43,15 @@ const subscriptionPlans = [
       yearly: 0
     },
     currency: 'EUR',
-    description: 'Perfect for getting started with online reputation management',
-    tagline: 'Build trust, no strings attached',
+    description: 'Inizia gratis con le funzioni base',
+    tagline: 'Gestione recensioni base',
     popular: false,
     
     features: [
-      FEATURE_FLAGS.UNLIMITED_REVIEWS,
-      FEATURE_FLAGS.BASIC_PROFILE,
-      FEATURE_FLAGS.RESPOND_TO_REVIEWS
+      'Raccolta recensioni',
+      'Profilo business base', 
+      'Risposta alle recensioni',
+      'Statistiche base'
     ],
     
     limits: {
@@ -77,16 +78,17 @@ const subscriptionPlans = [
       yearly: 490
     },
     currency: 'EUR',
-    description: 'Essential features for growing businesses',
-    tagline: 'Grow your reputation',
+    description: 'Features essenziali per aziende in crescita',
+    tagline: 'Fai crescere la tua reputazione',
     popular: true,
     
     features: [
-      FEATURE_FLAGS.UNLIMITED_REVIEWS,
-      FEATURE_FLAGS.BASIC_PROFILE,
-      FEATURE_FLAGS.RESPOND_TO_REVIEWS,
-      FEATURE_FLAGS.AUTO_REVIEW_INVITES,
-      FEATURE_FLAGS.CUSTOM_PROFILE
+      'Raccolta recensioni illimitata',
+      'Profilo business personalizzato',
+      'Risposta alle recensioni', 
+      '200 inviti automatici/mese',
+      'Analytics base',
+      '3 membri team'
     ],
     
     limits: {
@@ -113,17 +115,18 @@ const subscriptionPlans = [
       yearly: 1490
     },
     currency: 'EUR',
-    description: 'Advanced features for professional businesses',
-    tagline: 'Professional reputation management',
+    description: 'Funzionalità avanzate per business professionali',
+    tagline: 'Gestione reputazione professionale',
     popular: false,
     
     features: [
-      FEATURE_FLAGS.UNLIMITED_REVIEWS,
-      FEATURE_FLAGS.BASIC_PROFILE,
-      FEATURE_FLAGS.RESPOND_TO_REVIEWS,
-      FEATURE_FLAGS.AUTO_REVIEW_INVITES,
-      FEATURE_FLAGS.CUSTOM_PROFILE,
-      FEATURE_FLAGS.ADVANCED_ANALYTICS
+      'Raccolta recensioni illimitata',
+      'Profilo business avanzato',
+      'Risposta alle recensioni',
+      '500 inviti automatici/mese',
+      'Analytics avanzate',
+      '10 membri team',
+      'Supporto prioritario'
     ],
     
     limits: {
@@ -150,18 +153,19 @@ const subscriptionPlans = [
       yearly: 3990
     },
     currency: 'EUR',
-    description: 'Full-featured solution for enterprises',
-    tagline: 'Complete enterprise solution',
+    description: 'Soluzione completa per enterprise',
+    tagline: 'Soluzione enterprise completa',
     popular: false,
     
     features: [
-      FEATURE_FLAGS.UNLIMITED_REVIEWS,
-      FEATURE_FLAGS.BASIC_PROFILE,
-      FEATURE_FLAGS.RESPOND_TO_REVIEWS,
-      FEATURE_FLAGS.AUTO_REVIEW_INVITES,
-      FEATURE_FLAGS.CUSTOM_PROFILE,
-      FEATURE_FLAGS.ADVANCED_ANALYTICS,
-      FEATURE_FLAGS.API_ACCESS
+      'Raccolta recensioni illimitata',
+      'Profilo business enterprise',
+      'Risposta alle recensioni',
+      '2,500 inviti automatici/mese',
+      'Analytics enterprise',
+      '50 membri team',
+      'Accesso API completo',
+      'Supporto dedicato'
     ],
     
     limits: {
@@ -181,37 +185,35 @@ const subscriptionPlans = [
 ];
 
 /**
- * Plan comparison matrix for UI rendering - ONLY REAL FEATURES
+ * Plan comparison matrix - ONLY REAL IMPLEMENTED FEATURES
  */
 const planComparisonFeatures = [
   {
-    category: 'Core Features',
+    category: 'Funzionalità Base',
     features: [
-      { name: 'Review Collection', free: '✓', plus: '✓', premium: '✓', advanced: '✓' },
-      { name: 'Review Invites/month', free: '0', plus: '200', premium: '500', advanced: '2,500' },
-      { name: 'Team Members', free: '1', plus: '3', premium: '10', advanced: '50' },
-      { name: 'API Access', free: '×', plus: '×', premium: 'Limited', advanced: 'Full' }
+      { name: 'Raccolta Recensioni', free: '✓', plus: '✓', premium: '✓', advanced: '✓' },
+      { name: 'Profilo Business', free: 'Base', plus: 'Personalizzato', premium: 'Avanzato', advanced: 'Enterprise' },
+      { name: 'Risposta Recensioni', free: '✓', plus: '✓', premium: '✓', advanced: '✓' }
     ]
   },
   {
-    category: 'Customization',
+    category: 'Automazione',
     features: [
-      { name: 'Custom Profile', free: '×', plus: '✓', premium: '✓', advanced: '✓' },
-      { name: 'Branding Removal', free: '×', plus: '✓', premium: '✓', advanced: '✓' }
+      { name: 'Inviti Automatici/mese', free: '0', plus: '200', premium: '500', advanced: '2,500' },
+      { name: 'Membri Team', free: '1', plus: '3', premium: '10', advanced: '50' }
     ]
   },
   {
-    category: 'Analytics', 
+    category: 'Analytics e API',
     features: [
-      { name: 'Basic Analytics', free: '×', plus: '×', premium: '✓', advanced: '✓' },
-      { name: 'Advanced Analytics', free: '×', plus: '×', premium: '✓', advanced: '✓' }
+      { name: 'Analytics', free: 'Base', plus: 'Base', premium: 'Avanzate', advanced: 'Enterprise' },
+      { name: 'Accesso API', free: '×', plus: '×', premium: 'Limitato', advanced: 'Completo' }
     ]
   },
   {
-    category: 'Support',
+    category: 'Supporto',
     features: [
-      { name: 'Support Level', free: 'Community', plus: 'Email', premium: 'Priority', advanced: 'Dedicated' },
-      { name: 'Response Time', free: '×', plus: '48h', premium: '24h', advanced: '4h' }
+      { name: 'Livello Supporto', free: 'Community', plus: 'Email', premium: 'Prioritario', advanced: 'Dedicato' }
     ]
   }
 ];
