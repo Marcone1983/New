@@ -326,45 +326,32 @@
             return div;
         }
 
-        // Get features list HTML - ONLY REAL IMPLEMENTED FEATURES
+        // Get features list HTML - Business Features per Plan
         function getFeaturesList(plan) {
-            let features = [];
-            
-            // Base features for all plans
-            features.push('📝 Raccolta Recensioni');
-            features.push('👤 Profilo Base');
-            
-            // Plan-specific REAL features only
-            switch(plan.id) {
-                case 'free':
-                    features.push('💬 Risposta alle Recensioni');
-                    features.push('📊 Statistiche Base');
-                    break;
-                case 'plus':
-                    features.push('💬 Risposta alle Recensioni');
-                    features.push('🚀 200 Inviti/mese');
-                    features.push('🎨 Profilo Personalizzato');
-                    features.push('📊 Analytics Base');
-                    break;
-                case 'premium':
-                    features.push('💬 Risposta alle Recensioni');
-                    features.push('🚀 500 Inviti/mese');
-                    features.push('🎨 Profilo Personalizzato');
-                    features.push('📊 Analytics Avanzate');
-                    features.push('👥 10 Membri Team');
-                    break;
-                case 'advanced':
-                    features.push('💬 Risposta alle Recensioni');
-                    features.push('🚀 2,500 Inviti/mese');
-                    features.push('🎨 Profilo Personalizzato');
-                    features.push('📊 Analytics Avanzate');
-                    features.push('👥 50 Membri Team');
-                    features.push('🔑 Accesso API');
-                    features.push('🛡️ Supporto Dedicato');
-                    break;
+            // Use features directly from plan configuration
+            if (plan.features && Array.isArray(plan.features)) {
+                return plan.features.map(feature => {
+                    // Add emojis to make features more visual
+                    if (feature.includes('Recensioni Illimitate')) return `<li>📝 ${feature}</li>`;
+                    if (feature.includes('Profilo Base')) return `<li>🏢 ${feature}</li>`;
+                    if (feature.includes('Rispondi alle Recensioni')) return `<li>💬 ${feature}</li>`;
+                    if (feature.includes('Inviti Automatici')) return `<li>🚀 ${feature}</li>`;
+                    if (feature.includes('Profilo Custom')) return `<li>🎨 ${feature}</li>`;
+                    if (feature.includes('Analytics Avanzate')) return `<li>📊 ${feature}</li>`;
+                    if (feature.includes('Marketing Automation')) return `<li>🤖 ${feature}</li>`;
+                    if (feature.includes('Review Tagging')) return `<li>🏷️ ${feature}</li>`;
+                    if (feature.includes('TrustScore Forecasting')) return `<li>🔮 ${feature}</li>`;
+                    if (feature.includes('AI Auto-Response')) return `<li>🧠 ${feature}</li>`;
+                    if (feature.includes('SOC2 Compliance')) return `<li>🔐 ${feature}</li>`;
+                    if (feature.includes('API Illimitate')) return `<li>🎯 ${feature}</li>`;
+                    if (feature.includes('Zendesk')) return `<li>🎧 ${feature}</li>`;
+                    if (feature.includes('HubSpot')) return `<li>📧 ${feature}</li>`;
+                    if (feature.includes('Salesforce')) return `<li>☁️ ${feature}</li>`;
+                    return `<li>✨ ${feature}</li>`;
+                }).join('');
             }
-
-            return features.map(f => `<li>${f}</li>`).join('');
+            
+            return '<li>Feature non disponibili</li>';
         }
 
         // Get button text

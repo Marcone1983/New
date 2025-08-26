@@ -48,10 +48,9 @@ const subscriptionPlans = [
     popular: false,
     
     features: [
-      'Raccolta recensioni',
-      'Profilo business base', 
-      'Risposta alle recensioni',
-      'Statistiche base'
+      'Recensioni Illimitate - Raccogli recensioni senza limiti',
+      'Profilo Base - Pagina aziendale pubblica', 
+      'Rispondi alle Recensioni - Interagisci con i clienti'
     ],
     
     limits: {
@@ -83,12 +82,11 @@ const subscriptionPlans = [
     popular: true,
     
     features: [
-      'Raccolta recensioni illimitata',
-      'Profilo business personalizzato',
-      'Risposta alle recensioni', 
-      '200 inviti automatici/mese',
-      'Analytics base',
-      '3 membri team'
+      'Recensioni Illimitate - Raccogli recensioni senza limiti',
+      'Profilo Base - Pagina aziendale pubblica',
+      'Rispondi alle Recensioni - Interagisci con i clienti',
+      'Inviti Automatici Plus - 200 inviti/mese automatizzati',
+      'Profilo Custom Plus - Logo e branding personalizzato'
     ],
     
     limits: {
@@ -120,13 +118,14 @@ const subscriptionPlans = [
     popular: false,
     
     features: [
-      'Raccolta recensioni illimitata',
-      'Profilo business avanzato',
-      'Risposta alle recensioni',
-      '500 inviti automatici/mese',
-      'Analytics avanzate',
-      '10 membri team',
-      'Supporto prioritario'
+      'Recensioni Illimitate - Raccogli recensioni senza limiti',
+      'Profilo Base - Pagina aziendale pubblica',
+      'Rispondi alle Recensioni - Interagisci con i clienti',
+      'Inviti Automatici Plus - 500 inviti/mese automatizzati',
+      'Profilo Custom Plus - Logo e branding personalizzato',
+      'Analytics Avanzate Premium - Report dettagliati e insights',
+      'Marketing Automation Premium - Workflow automatizzati',
+      'Review Tagging Advanced - Organizza feedback per topic'
     ],
     
     limits: {
@@ -158,14 +157,21 @@ const subscriptionPlans = [
     popular: false,
     
     features: [
-      'Raccolta recensioni illimitata',
-      'Profilo business enterprise',
-      'Risposta alle recensioni',
-      '2,500 inviti automatici/mese',
-      'Analytics enterprise',
-      '50 membri team',
-      'Accesso API completo',
-      'Supporto dedicato'
+      'Recensioni Illimitate - Raccogli recensioni senza limiti',
+      'Profilo Base - Pagina aziendale pubblica',
+      'Rispondi alle Recensioni - Interagisci con i clienti',
+      'Inviti Automatici Plus - 2,500 inviti/mese automatizzati',
+      'Profilo Custom Plus - Logo e branding personalizzato',
+      'Analytics Avanzate Premium - Report dettagliati e insights',
+      'Marketing Automation Premium - Workflow automatizzati',
+      'Review Tagging Advanced - Organizza feedback per topic',
+      'TrustScore Forecasting Advanced - Previsioni AI sul punteggio',
+      'AI Auto-Response Enterprise - Risposte automatiche intelligenti',
+      'SOC2 Compliance Enterprise - Certificazioni sicurezza',
+      'API Illimitate Enterprise - Accesso completo alle API',
+      'Zendesk Plus - Gestione ticket integrata',
+      'HubSpot Advanced - CRM & Marketing automation',
+      'Salesforce Enterprise - Enterprise CRM integration'
     ],
     
     limits: {
