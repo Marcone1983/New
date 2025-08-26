@@ -32,20 +32,6 @@ const YOUR_BUSINESS_WALLETS = {
     chain_id: 137, 
     explorer: 'https://polygonscan.com',
     confirmations_required: 20
-  },
-  avalanche: {
-    address: '0x15315077b2C2bA625bc0bc156415F704208FBd45',
-    network: 'Avalanche C-Chain',
-    chain_id: 43114,
-    explorer: 'https://snowtrace.io',
-    confirmations_required: 1
-  },
-  arbitrum: {
-    address: '0x15315077b2C2bA625bc0bc156415F704208FBd45',
-    network: 'Arbitrum One', 
-    chain_id: 42161,
-    explorer: 'https://arbiscan.io',
-    confirmations_required: 1
   }
 };
 
@@ -73,7 +59,6 @@ const ENTERPRISE_CRYPTO_PLANS = {
       ETH: '0.0272',    // Dynamic pricing based on current rates
       BNB: '0.245',     // Updated every hour
       MATIC: '65.33',   // Real-time market rates
-      AVAX: '3.5',      // CoinGecko API integration
       USDT: '49.00',    // Stablecoin fixed
       USDC: '49.00',    // Stablecoin fixed
       BTC: '0.00108'    // Bitcoin option
@@ -104,7 +89,6 @@ const ENTERPRISE_CRYPTO_PLANS = {
       ETH: '0.0828',    
       BNB: '0.745',     
       MATIC: '198.67',  
-      AVAX: '10.64',    
       USDT: '149.00',   
       USDC: '149.00',   
       BTC: '0.00329'    
@@ -136,7 +120,6 @@ const ENTERPRISE_CRYPTO_PLANS = {
       ETH: '0.2217',    
       BNB: '1.995',     
       MATIC: '532.00',  
-      AVAX: '28.5',     
       USDT: '399.00',   
       USDC: '399.00',   
       BTC: '0.00881'    

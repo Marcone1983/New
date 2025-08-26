@@ -376,9 +376,7 @@ ON blockchain_transactions (to_address, status, detected_at DESC);
 INSERT INTO business_wallet_monitoring (wallet_address, network, wallet_name, purpose) VALUES
 ('0x15315077b2C2bA625bc0bc156415F704208FBd45', 'ethereum', 'Main ETH Wallet', 'subscription_payments'),
 ('0x15315077b2C2bA625bc0bc156415F704208FBd45', 'bsc', 'Main BSC Wallet', 'subscription_payments'),
-('0x15315077b2C2bA625bc0bc156415F704208FBd45', 'polygon', 'Main Polygon Wallet', 'subscription_payments'),
-('0x15315077b2C2bA625bc0bc156415F704208FBd45', 'avalanche', 'Main AVAX Wallet', 'subscription_payments'),
-('0x15315077b2C2bA625bc0bc156415F704208FBd45', 'arbitrum', 'Main ARB Wallet', 'subscription_payments')
+('0x15315077b2C2bA625bc0bc156415F704208FBd45', 'polygon', 'Main Polygon Wallet', 'subscription_payments')
 ON CONFLICT (wallet_address, network) DO NOTHING;
 
 -- Grant permissions for application user

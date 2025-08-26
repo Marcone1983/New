@@ -63,38 +63,6 @@ const BLOCKCHAIN_NETWORKS = {
     average_block_time: 2,
     gas_limit: 21000
   },
-  avalanche: {
-    name: 'Avalanche C-Chain',
-    chain_id: 43114,
-    rpc_endpoints: [
-      'https://api.avax.network/ext/bc/C/rpc',
-      'https://rpc.ankr.com/avalanche'
-    ],
-    explorer_api: 'https://api.snowtrace.io/api',
-    explorer_url: 'https://snowtrace.io',
-    api_key: process.env.SNOWTRACE_API_KEY,
-    native_symbol: 'AVAX',
-    decimals: 18,
-    confirmation_blocks: 1,
-    average_block_time: 2,
-    gas_limit: 21000
-  },
-  arbitrum: {
-    name: 'Arbitrum One',
-    chain_id: 42161,
-    rpc_endpoints: [
-      'https://arb1.arbitrum.io/rpc',
-      'https://arbitrum-mainnet.infura.io/v3/' + process.env.INFURA_PROJECT_ID
-    ],
-    explorer_api: 'https://api.arbiscan.io/api',
-    explorer_url: 'https://arbiscan.io',
-    api_key: process.env.ARBISCAN_API_KEY,
-    native_symbol: 'ETH',
-    decimals: 18,
-    confirmation_blocks: 1,
-    average_block_time: 1,
-    gas_limit: 21000
-  }
 };
 
 // BUSINESS CRYPTO WALLETS - PRODUCTION ADDRESSES
@@ -113,27 +81,16 @@ const BUSINESS_CRYPTO_WALLETS = {
     address: '0x15315077b2C2bA625bc0bc156415F704208FBd45',
     network: 'polygon',
     label: 'Main Polygon Business Wallet'
-  },
-  avalanche: {
-    address: '0x15315077b2C2bA625bc0bc156415F704208FBd45',
-    network: 'avalanche',
-    label: 'Main AVAX Business Wallet'
-  },
-  arbitrum: {
-    address: '0x15315077b2C2bA625bc0bc156415F704208FBd45',
-    network: 'arbitrum',
-    label: 'Main Arbitrum Business Wallet'
   }
 };
 
 // SUPPORTED CRYPTOCURRENCIES WITH NETWORKS
 const SUPPORTED_CRYPTOCURRENCIES = {
-  ETH: { networks: ['ethereum', 'arbitrum'], decimals: 18 },
+  ETH: { networks: ['ethereum'], decimals: 18 },
   BNB: { networks: ['bsc'], decimals: 18 },
   MATIC: { networks: ['polygon'], decimals: 18 },
-  AVAX: { networks: ['avalanche'], decimals: 18 },
   USDT: { networks: ['ethereum', 'bsc', 'polygon'], decimals: 6 },
-  USDC: { networks: ['ethereum', 'polygon', 'arbitrum'], decimals: 6 },
+  USDC: { networks: ['ethereum', 'polygon'], decimals: 6 },
   BTC: { networks: [], decimals: 8 } // Bitcoin requires separate handling
 };
 
