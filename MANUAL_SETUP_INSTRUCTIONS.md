@@ -6,7 +6,7 @@ La tabella `user_profiles` NON ESISTE nel database Supabase. Per questo ricevi "
 ## 🔧 SOLUZIONE IMMEDIATA
 
 ### STEP 1: SUPABASE SQL MIGRATION
-1. **Vai su**: https://supabase.com/dashboard/project/zsionhetkwaslvounaqo/sql
+1. **Vai su**: https://supabase.com/dashboard/project/[your-project-id]/sql
 2. **Copia e incolla questo codice completo:**
 
 ```sql
@@ -55,7 +55,7 @@ GRANT USAGE ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated;
 
 ```
 VITE_SUPABASE_URL
-https://zsionhetkwaslvounaqo.supabase.co
+[your-supabase-project-url]
 
 VITE_SUPABASE_ANON_KEY  
 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpzaW9uaGV0a3dhc2x2b3VuYXFvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYwNTgwNTUsImV4cCI6MjA3MTYzNDA1NX0.5DVKWx1-r3lkuUo7UVVnorTSq_HTZz3Gr6J6jbDJ5ig

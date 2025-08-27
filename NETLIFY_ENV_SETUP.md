@@ -9,7 +9,7 @@ https://app.netlify.com → Il tuo sito → Site settings → Environment variab
 **Variabile 1:**
 ```
 Name: VITE_SUPABASE_URL
-Value: https://zsionhetkwaslvounaqo.supabase.co
+Value: [your-supabase-project-url]
 ```
 
 **Variabile 2:**

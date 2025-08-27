@@ -29,9 +29,9 @@ Il database creerà:
 Aggiungi in **Netlify Dashboard** → **Environment Variables:**
 
 ```bash
-# Supabase (già configurate)
-VITE_SUPABASE_URL = https://zsionhetkwaslvounaqo.supabase.co
-VITE_SUPABASE_ANON_KEY = [tua-anon-key]
+# Supabase (configure in Netlify Dashboard)
+VITE_SUPABASE_URL = [your-supabase-url]
+VITE_SUPABASE_ANON_KEY = [your-supabase-anon-key]
 
 # Crypto Payment System
 CRYPTO_PAYMENT_WALLET = 0xC69088eB5F015Fca5B385b8E3A0463749813093e
