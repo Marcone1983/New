@@ -424,7 +424,7 @@ function analyzeOSINTResults(results, businessName) {
   const avgConfidence = results.reduce((sum, r) => sum + r.confidence, 0) / results.length || 0;
   
   // Determine business type based on categories found
-  const businessType = determineBusiness Type(categories, results);
+  const businessType = determineBusinessType(categories, results);
   
   // Generate insights
   const insights = generateBusinessInsights(results, businessName);
